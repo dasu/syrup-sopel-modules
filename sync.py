@@ -1,10 +1,11 @@
 """
-FOR SYNCING AND SYNC CLUB ver 0.7
+FOR SYNCING AND SYNC CLUB ver 0.8
 Written by agricola
 """
 from threading import Timer
 from time import sleep
 import willie
+from willie.tools import Identifier
 
 #sync club related below
 @willie.module.commands('sc','syncclub')
@@ -21,9 +22,10 @@ def club(bot,trigger):
 def name(bot,trigger):
     '''Remembers yo name
     '''
-    if trigger.nick.lower() not in name.nerdlist and trigger.nick.lower() != 'py-ctcp':
-        name.nerdlist.append(trigger.nick.lower())
-    if len(name.nerdlist)>10:
+    inick = Identifier(trigger.nick)
+    if inick not in name.nerdlist and inick != 'py-ctcp':
+        name.nerdlist.append(inick)
+    if len(name.nerdlist)>15:
         name.nerdlist.pop(0)
 name.nerdlist = []
 
@@ -54,12 +56,13 @@ def sync(bot,trigger):
         sync.readylist = syncers.split()
         sync.readylist.pop(0)
         sync.namelist=list(set(sync.readylist))
-        if trigger.nick.lower() not in name.nerdlist:
-            name.nerdlist.append(trigger.nick.lower())
+        inick = Identifier(trigger.nick)
+        if inick not in name.nerdlist:
+            name.nerdlist.append(inick)
         badnames = namechecker(name.nerdlist,sync.namelist)
         sync.readylist=list(set(sync.readylist))
         if badnames == []:
-            if sync.readylist!=[] and bot.nick not in sync.readylist and len(sync.readylist)<=10:
+            if sync.readylist!=[] and bot.nick not in sync.readylist and len(sync.readylist)<=15:
                     sync.madtime=Timer(60.0,mad,[bot,trigger])
                     sync.madtime.start()
                     bot.say("Buckle up syncers!")
@@ -96,9 +99,9 @@ def ready(bot,trigger):
 
     Removes user from the list and initiates the sync if all are ready.
     '''
-
-    if trigger.nick.lower() in sync.readylist:
-        sync.readylist.remove(trigger.nick.lower())
+    inick = Identifier(trigger.nick)
+    if inick in sync.readylist:
+        sync.readylist.remove(inick)
         if sync.readylist == [] and sync.sync_on == 1:
             sync.madtime.cancel()
             bot.say('Lets go {0}!'.format(", ".join(sync.namelist)))
@@ -123,8 +126,9 @@ def desync(bot,trigger):
 
     Ends the sync if user on the list
     '''
+    inick = Identifier(trigger.nick)
     if sync.readylist !=[] and sync.sync_on == 1:
-        if trigger.nick.lower() in sync.readylist:
+        if inick in sync.readylist:
             bot.say('Aborting sync...')
             sync.madtime.cancel()
             sync.sync_on=0
@@ -137,3 +141,4 @@ def desync(bot,trigger):
 
 if __name__ == '__main__':
     print(__doc__.strip())
+
