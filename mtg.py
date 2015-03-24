@@ -11,7 +11,10 @@ def mtg(bot,trigger):
     i = trigger.group(2)
     x = urlopen('http://api.mtgdb.info/search/{0}'.format(i))
     c = x.read()
-    js = json.loads(c.decode('utf-8'))[0]
+    try:
+        js = json.loads(c.decode('utf-8'))[0]
+    except:
+        return bot.say('Card not found.')
     if js['type'] == 'Creature':
         bot.say('Name: {0}, Type: {1}, Cost: {2}, Effect: {3}, Power: {4}, Toughness: {5}'.format(js['name'], js['type'], js['manaCost'], js['description'], js['power'], js['toughness']))
     else:
