@@ -1,4 +1,5 @@
 #twitchtv module with hitbox support customized for #pancakes
+#todo announce when someone starts streaming?
 #version 1.2.3
 import willie
 import json
@@ -18,7 +19,9 @@ def twitch(bot,trigger):
             x = stream['channel']['name']
             y = stream['channel']['url']
             w = stream['viewers']
-            z = "{0} ({1} Viewers: {2})".format(x,y,w)
+            status = stream['channel']['status']
+            #z = x + " (" + y + " Viewers:" + w + ")"
+            z = "{0} ({1} Title:{2} Viewers: {3})".format(x,y,status,w)
             v.append(z)
         #for name in uri2:
         #    uri3 = 'http://api.hitbox.tv/media/live/{0}'.format(name)
@@ -31,9 +34,10 @@ def twitch(bot,trigger):
         #        v.append(z2)
         if v == []:
             return bot.say('No one is currently streaming.')
-            
+
         else:
             return bot.say('Currently streaming: {0}'.format(", ".join(v)))
+
     else:
         i = trigger.group(2)
         uri = 'https://api.twitch.tv/kraken/streams/{0}'.format(i)
@@ -46,12 +50,11 @@ def twitch(bot,trigger):
             if format(m['stream']) == 'None':
                 return bot.say('{0} is currently not streaming.'.format(i))
             else:
-                return bot.say('{0} is streaming {1}: {2} ({3} Viewers)'.format(i, m['stream']['game'], m['stream']['channel']['url'],m['stream']['viewers']))
+                return bot.say('{0} is streaming {1}: {2} (Title: {3}, {4} Viewers)'.format(i, m['stream']['game'], m['stream']['channel']['url'],m['stream']['channe$
         except (HTTPError, IOError, ValueError, KeyError):
             return bot.say("Invalid Username.")
 
-
-
+            
 @willie.module.commands('htv','hitbox')
 @willie.module.example('.htv (or .hitbox) hitboxusername')
 def hitbox(bot,trigger):
