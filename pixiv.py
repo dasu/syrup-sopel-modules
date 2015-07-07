@@ -1,23 +1,39 @@
-#this is slow and can definitely be improved.
-
-import willie
 from pyvirtualdisplay import Display
+import willie
 from selenium import webdriver
 import urllib.request
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-
-@willie.module.commands('pixiv')
-@willie.module.example('.pixiv word')
-def pixiv(bot,trigger):
-    display = Display(visible=0, size=(1024,768))
-    display.start()
+def setup(bot):
+    display = Display(visible =0, size=(1024,768))
+    bot.memory["pixdisplay"] = display.start()
     browser = webdriver.Firefox()
+    bot.memory["pixbrowser"] = browser
+
+
+@willie.module.commands('pixiven','pixen')
+@willie.module.example('.pixiven word')
+def pixiven(bot,trigger):
+    #display = Display(visible=0, size=(1024,768))
+    #display.start()
+    #browser = webdriver.Firefox()
     url = "http://www.pixiv.net/search.php?word="+urllib.request.quote(trigger.group(2))
-    browser.get(url)
-    bs = BeautifulSoup(browser.page_source)
+    bot.memory["pixbrowser"].get(url)
+    bs = BeautifulSoup(bot.memory["pixbrowser"].page_source)
 
     truesearch = bs.find("link", {"rel":"canonical"}).get('href')
     truesearchlink = 'http://www.pixiv.net/'+truesearch
     results = (bs.find("span",{ "class": "count-badge"}).text).replace("results","")
+    bot.say("{0} results | {1}".format(results,truesearchlink))
+    #bot.memory["pixbrowser"].close()
+
+@willie.module.commands('pixiv','pix')
+def pixiv(bot,trigger):
+    url = "http://www.pixiv.net/search.php?word="+urllib.request.quote(trigger.group(2))
+    x = urlopen(url).read()
+    bs = BeautifulSoup(x)
+    truesearch = bs.find("link", {"rel":"canonical"}).get('href')
+    truesearchlink = 'http://www.pixiv.net/'+truesearch
+    results = (bs.find("span", { "class": "count-badge"}).text).replace("results","")
     bot.say("{0} results | {1}".format(results,truesearchlink))
