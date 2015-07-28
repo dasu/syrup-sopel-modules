@@ -11,7 +11,9 @@ def getinfo(run,now):
     for item in schedule:
         group = item.find_all('td')
         st = group[0].getText()
+        estfix = timedelta(hours=1)
         starttime = datetime.strptime(st, '%m/%d/%Y %H:%M:%S' )
+        starttime = starttime + estfix
         offset = datetime.strptime(group[4].getText(), "%H:%M:%S")
         endtime = starttime + timedelta(hours = offset.hour, minutes = offset.minute, seconds=offset.second)
         if starttime < now and endtime > now:
