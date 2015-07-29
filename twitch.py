@@ -50,7 +50,7 @@ def twitch(bot,trigger):
             if format(m['stream']) == 'None':
                 return bot.say('{0} is currently not streaming.'.format(i))
             else:
-                return bot.say('{0} is streaming {1}: {2} (Title: {3}, {4} Viewers)'.format(i, m['stream']['game'], m['stream']['channel']['url'],m['stream']['channe$
+                return bot.say('{0} is streaming {1}: {2} (Title: {3}, {4} Viewers)'.format(i, m['stream']['game'], m['stream']['channel']['url'],m['stream']['channel']['status'],m['stream']['viewers']))
         except (HTTPError, IOError, ValueError, KeyError):
             return bot.say("Invalid Username.")
 
