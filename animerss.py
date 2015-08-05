@@ -1,12 +1,12 @@
 import feedparser
-from datetime import datetime
+import datetime
 import time
 import willie
 import urllib.request as urlrequest
 import json
 
 def get_short_url(gurl):
-    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key='
+    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDmplKOzdqkM_1hdZD-Y0KL8AkaiNlMEXA'
     long_url = json.dumps({'longUrl': gurl})
     request =  urlrequest.Request(short_url_service)
     request.add_header('Content-Type','application/json')
@@ -21,7 +21,7 @@ def parse(now):
     x = feedparser.parse(url)
     for items in x.entries:
         if now < items.published_parsed:
-            if items.title == 'Daily Briefs' or 'Ranking' in items.title or 'New York Times' in items.title:
+            if items.title == 'Daily Briefs' in items.title or 'Ranking' in items.title or 'New York Times' in items.title or 'Boruto' in items.title or 'Naruto' in items.title:
                 continue
             else:
                 rssurl = get_short_url(items.link)
@@ -30,7 +30,8 @@ def parse(now):
     if new:
         allnew = " | ".join(new)
         return allnew
-
+        
+#@willie.module.commands('startrss','rssstart')
 @willie.module.event('JOIN')
 @willie.module.rule('.*')
 def rss(bot, trigger):
@@ -41,7 +42,11 @@ def rss(bot, trigger):
         time.sleep(3600)
         while True:
             time.sleep(7200)
+            quietnow = datetime.datetime.utcnow().time()
             out = parse(now)
             if out:
-                bot.say(out)
+                if quietnow >= datetime.time(3,00) or quietnow <= datetime.time(11,00):
+                    pass
+                else:
+                    bot.say(out)
             now = time.gmtime()
