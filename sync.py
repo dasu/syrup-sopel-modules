@@ -25,7 +25,7 @@ def name(bot,trigger):
     inick = Identifier(trigger.nick)
     if inick not in name.nerdlist and inick != 'py-ctcp':
         name.nerdlist.append(inick)
-    if len(name.nerdlist)>15:
+    if len(name.nerdlist)>20:
         name.nerdlist.pop(0)
 name.nerdlist = []
 
