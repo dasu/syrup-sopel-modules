@@ -1,74 +1,152 @@
-#twitchtv module with hitbox support customized for #pancakes
-#todo announce when someone starts streaming?
-#version 1.2.3
+#
+import requests
 import willie
-import json
-from urllib.request import urlopen
-from urllib.error import HTTPError
 
-@willie.module.commands('twitchtv','tv','twitch')
+# TODO: Make these config options c:
+announce_chan = "#pancakes"
+streamers = [
+"coalll",
+"chouxe",
+"kwlpp",
+"dasusp",
+"lurkk",
+"agriks",
+"repppie",
+"squidgay",
+"supersocks",
+"sc00ty",
+"kaask",
+"mole_star",
+"twoiis"
+]
+
+hstreamers = [
+'kwlpp',
+'agriks',
+'coal',
+'chouxe',
+'socks',
+'dasusp',
+'agriks'
+]
+
+currently_streaming = {}
+currently_hstreaming = {}
+
+@willie.module.interval(10)
+def monitor_streamers(bot):
+  streaming_names = []
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(streamers)}).json()
+  results = []
+  for streamer in streaming["streams"]:
+    streamer_name = streamer["channel"]["name"]
+    streamer_game = streamer["channel"]["game"]
+    streamer_url = streamer["channel"]["url"]
+    streamer_viewers = streamer["viewers"]
+    
+    if streamer_name not in currently_streaming:
+      currently_streaming[streamer_name] = streamer_game, {'cooldown': 0}
+      results.append("%s just went live playing %s! (%s - %s viewer%s)" % (streamer_name, 
+                                                                          streamer_game, 
+                                                                          streamer_url, 
+                                                                          streamer_viewers, 
+                                                                          "s" if streamer_viewers != 1 else ""))
+    elif streamer_game != currently_streaming[streamer_name][0]:
+      currently_streaming[streamer_name] = streamer_game, {'cooldown': 0}
+      results.append("%s just started playing %s! (%s - %s viewer%s)" % (streamer_name, 
+                                                                        streamer_game, 
+                                                                        streamer_url, 
+                                                                        streamer_viewers, 
+                                                                        "s" if streamer_viewers != 1 else ""))
+
+    streaming_names.append(streamer_name)
+
+  if results:
+    bot.msg(announce_chan, ", ".join(results))  
+
+  # Remove people who stopped streaming
+  for streamer in currently_streaming.keys():
+    if streamer not in streaming_names:
+      currently_streaming[streamer][1]['cooldown'] += 10
+    if currently_streaming[streamer][1]['cooldown'] > 130:
+      del currently_streaming[streamer]
+
+  hstreaming_names = []
+  hs = ",".join(hstreamers)
+  hstreaming = requests.get('http://api.hitbox.tv/media/live/{0}'.format(hs)).json()
+  hresults = []
+  for hstreamer in hstreaming["livestream"]:
+    if hstreamer["media_is_live"] is "1":
+      hstreamer_name = hstreamer["media_user_name"]
+      hstreamer_game = hstreamer["category_name"]
+      hstreamer_url = hstreamer["channel"]["channel_link"]
+      hstreamer_viewers = hstreamer["media_views"]
+    
+      if hstreamer_name not in currently_hstreaming:
+        currently_hstreaming[hstreamer_name] = hstreamer_game, {'cooldown': 0}
+        hresults.append("%s just went live playing %s! (%s - %s viewer%s)" % (hstreamer_name,hstreamer_game,hstreamer_url,hstreamer_viewers,"s" if hstreamer_viewers != 1 else ""))
+
+      elif hstreamer_game != currently_hstreaming[hstreamer_game]:
+        currently_hstreaming[hstreamer_name] = hstreamer_game, {'cooldown': 0}
+        hresults.append("%s just started playing %s! (%s - %s viewer%s)" % (hstreamer_name,hstreamer_game,hstreamer_url,hstreamer_viewers,"s" if hstreamer_viewers != 1 else ""))
+
+      hstreaming_names.append(hstreamer_name)
+
+  if hresults:
+    bot.msg(announce_chan, ", ".join(hresults))
+  
+  for hstreamer in currently_hstreaming.keys():
+    if hstreamer not in hstreaming_names:
+      currently_hstreaming[hstreamer][1]['cooldown'] += 10
+    if currently_hstreaming[hstreamer][1]['cooldown'] > 130:
+      del currently_hstreaming[hstreamer]
+
+@willie.module.commands('twitchtv','tv','twitch', 'teevee')
 @willie.module.example('.tv  or .tv twitchusername')
-def twitch(bot,trigger):
-    if not trigger.group(2):
-        v = []
-        uri = 'https://api.twitch.tv/kraken/streams?channel=coalll,chouxe,kwlpp,dasusp,lurkk,agriks,repppie,squidgay,supersocks,sc00ty,kaask,mole_star,twoiis'
-        #uri2 = 'kwlpp','agriks','coal','chouxe','socks'
-        bytes = urlopen(uri).read()
-        m = json.loads(bytes.decode())
-        for stream in m['streams']:
-            x = stream['channel']['name']
-            y = stream['channel']['url']
-            w = stream['viewers']
-            status = stream['channel']['status']
-            #z = x + " (" + y + " Viewers:" + w + ")"
-            z = "{0} ({1} Title:{2} Viewers: {3})".format(x,y,status,w)
-            v.append(z)
-        #for name in uri2:
-        #    uri3 = 'http://api.hitbox.tv/media/live/{0}'.format(name)
-        #    bytes2 = web.get(uri3)
-        #    c = json.loads(bytes2)
-        #    if c['livestream'][0]['media_is_live'] == '1':
-        #        x2 = c['livestream'][0]['media_user_name']
-        #        y2 = c['livestream'][0]['channel']['channel_link']
-        #        z2 = x2 + " (" + y2 + ")"
-        #        v.append(z2)
-        if v == []:
-            return bot.say('No one is currently streaming.')
+def streamer_status(bot, trigger):
+  streamer_name = trigger.group(2)
+  query = streamers if streamer_name is None else streamer_name.split(" ")
 
-        else:
-            return bot.say('Currently streaming: {0}'.format(", ".join(v)))
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)}).json()
+  results = []
+  for streamer in streaming["streams"]:
+    streamer_name = streamer["channel"]["name"]
+    streamer_game = streamer["channel"]["game"]
+    streamer_url = streamer["channel"]["url"]
+    streamer_viewers = streamer["viewers"]
+    
+    results.append("%s is playing %s (%s - %s viewer%s)" % (streamer_name, 
+                                                           streamer_game, 
+                                                           streamer_url, 
+                                                           streamer_viewers, 
+                                                           "s" if streamer_viewers != 1 else "" ))
+  if results:
+    bot.say(", ".join(results))
+  else:
+    bot.say("Nobody is currently streaming.")
 
-    else:
-        i = trigger.group(2)
-        uri = 'https://api.twitch.tv/kraken/streams/{0}'.format(i)
-        try:
-            bytes = urlopen(uri).read()
-        except (HTTPError, IOError, ValueError):
-            return bot.say('{0} does not exist.'.format(i))
-        m = json.loads(bytes.decode())
-        try:
-            if format(m['stream']) == 'None':
-                return bot.say('{0} is currently not streaming.'.format(i))
-            else:
-                return bot.say('{0} is streaming {1}: {2} (Title: {3}, {4} Viewers)'.format(i, m['stream']['game'], m['stream']['channel']['url'],m['stream']['channel']['status'],m['stream']['viewers']))
-        except (HTTPError, IOError, ValueError, KeyError):
-            return bot.say("Invalid Username.")
 
-            
-@willie.module.commands('htv','hitbox')
-@willie.module.example('.htv (or .hitbox) hitboxusername')
-def hitbox(bot,trigger):
-    if not trigger.group(2):
-        return bot.say('Enter a hitbox user\'s name.')
-    else:
-        ret = trigger.group(2)
-        uri5 = 'http://api.hitbox.tv/media/live/{0}'.format(ret)
-        try:
-            bytes3 = urlopen(uri5).read()
-        except (HTTPError, IOError, ValueError):
-            return bot.say("User might not exist.")
-        c3 = json.loads(bytes3.decode())
-        if c3['livestream'][0]['media_is_live'] == '1':
-            return bot.say('{0} is streaming {1}: {2}'.format(ret, c3['livestream'][0]['category_name'], c3['livestream'][0]['channel']['channel_link']))
-        else:
-            return bot.say('{0} is currently not streaming.'.format(ret))
+@willie.module.commands('hb','hitbox')
+@willie.module.example('.hb  or .hb twitchusername')
+def hstreamer_status(bot, trigger):
+  hstreamer_name = trigger.group(2)
+  query = ",".join(hstreamers) if hstreamer_name is None else hstreamer_name
+  hstreaming = requests.get('http://api.hitbox.tv/media/live/{0}'.format(query)).json()
+  hresults = []
+  for hstreamer in hstreaming["livestream"]:
+    if hstreamer["media_is_live"] is "1":
+        hstreamer_name = hstreamer["media_user_name"]
+        hstreamer_game = hstreamer["category_name"]
+        hstreamer_url = hstreamer["channel"]["channel_link"]
+        hstreamer_viewers = hstreamer["media_views"]
+    
+        hresults.append("%s is playing %s (%s - %s viewer%s)" % (hstreamer_name,
+                                                           hstreamer_game,
+                                                           hstreamer_url,
+                                                           hstreamer_viewers,
+                                                           "s" if hstreamer_viewers != 1 else "" ))
+  if hresults:
+    bot.say(", ".join(hresults))
+  else:
+    bot.say("Nobody is currently streaming.")
+
