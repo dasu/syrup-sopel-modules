@@ -86,7 +86,7 @@ def monitor_streamers(bot):
         currently_hstreaming[hstreamer_name] = hstreamer_game, {'cooldown': 0}
         hresults.append("%s just went live playing %s! (%s - %s viewer%s)" % (hstreamer_name,hstreamer_game,hstreamer_url,hstreamer_viewers,"s" if hstreamer_viewers != 1 else ""))
 
-      elif hstreamer_game != currently_hstreaming[hstreamer_game]:
+      elif hstreamer_game != currently_hstreaming[hstreamer_name][0]:
         currently_hstreaming[hstreamer_name] = hstreamer_game, {'cooldown': 0}
         hresults.append("%s just started playing %s! (%s - %s viewer%s)" % (hstreamer_name,hstreamer_game,hstreamer_url,hstreamer_viewers,"s" if hstreamer_viewers != 1 else ""))
 
