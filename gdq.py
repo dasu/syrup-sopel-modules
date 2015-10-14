@@ -43,8 +43,8 @@ def gdq(bot, trigger):
         x = urllib.request.urlopen(req)
     except:
         now = datetime.now()
-        delta = datetime(2016,1,4,12,00) - now
-        return bot.say("GDQ is {0} days away (January 04)".format(delta.days))
+        delta = datetime(2016,1,3,12,00) - now
+        return bot.say("GDQ is {0} days away (January 03)".format(delta.days))
     c = (x.read().decode('utf-8'))
     bs = BeautifulSoup(c)
     run = bs.find("tbody",{"id":"runTable"})
@@ -59,8 +59,8 @@ def gdq(bot, trigger):
             return bot.say("GDQ is {0} days away ({1})".format(tts.days,gdqstart.strftime('%m/%d/%Y')))
 
     if nextgame == 'done':
-        delta = datetime(2016,1,4,12,00) - now
-        return bot.say("GDQ is {0} days away (January 04)".format(delta.days))
+        delta = datetime(2016,1,3,12,00) - now
+        return bot.say("GDQ is {0} days away (January 03)".format(delta.days))
     if game:
         if comment:
             bot.say("Current Game: {0} [{1}] by {2} ETA: {3} Comment: {4} | Next Game: {5} by {6}".format(game, console, runner, eta, comment, nextgame, nextrunner))
