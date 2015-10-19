@@ -1,8 +1,8 @@
 from urllib.request import urlopen, quote
 from bs4 import BeautifulSoup
-import willie
-@willie.module.commands('edict')
-@willie.module.example('.edict word/character')
+import sopel
+@sopel.module.commands('edict')
+@sopel.module.example('.edict word/character')
 def edict(bot, trigger):
     if not trigger.group(2):
         return bot.say("Please enter a word.")
@@ -10,7 +10,7 @@ def edict(bot, trigger):
     try:
         i.encode('ascii')
         print(i)
-        x = urlopen("http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi?1ZDJ{0}".format(i))
+        x = urlopen("http://nihongo.monash.edu/cgi-bin/wwwjdic?1ZDJ{0}".format(i))
         c = x.read()
         bs = BeautifulSoup(c)
         #print(bs)
@@ -22,7 +22,7 @@ def edict(bot, trigger):
         bot.say(res)
     except:
         print(i)
-        x = urlopen("http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi?1ZIK{0}".format(quote(i)))
+        x = urlopen("http://nihongo.monash.edu/cgi-bin/wwwjdic?1ZIK{0}".format(quote(i)))
         c = x.read()
         bs = BeautifulSoup(c)
         if bs.li:
