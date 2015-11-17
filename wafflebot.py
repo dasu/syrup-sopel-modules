@@ -1,4 +1,3 @@
-#based on boredbot's wafflebot: https://github.com/sc0tt/boredbot-modules/blob/master/wafflebot.py
 import datetime
 import redis
 import markovify
@@ -10,9 +9,11 @@ ignore = ["http"]
 
 MAX_OVERLAP_RATIO = 0.7
 MAX_OVERLAP_TOTAL = 15
+global llines
+llines = 0
+
 
 db = redis.Redis(db=0)
-
 class WaffleBotText(markovify.Text):
   def test_sentence_input(self, sentence):
     return True
@@ -20,8 +21,8 @@ class WaffleBotText(markovify.Text):
   def _prepare_text(self, text):
     text = text.strip()
 
-    if not text.endswith((".", "?", "!")):
-      text += "."
+    #if not text.endswith((".", "?", "!")):
+    #  text += "."
 
     return text
 
@@ -34,6 +35,8 @@ class WaffleBotText(markovify.Text):
 def setup(bot):
   global fullresults
   global fullmodel
+  #global llines
+  #llines = 0
   fullresults = []
   for k in db.keys('*'):
     fullresults.extend(db.smembers(k))
@@ -59,7 +62,15 @@ def wafflebot(bot, trigger):
   today = datetime.datetime.now()
   key = "%s%s:%s" % (today.month, today.day, trigger.nick.lower())
   db.sadd(key, str(trigger))
- # db.expire(key, timeout)
+  #db.expire(key, timeout)
+  global llines
+  llines+=1
+  if llines > 1000:
+    llines = 0
+    fullresp = fullmodel.make_short_sentence(140,
+        max_overlap_total=MAX_OVERLAP_TOTAL,
+        max_overlap_ratio=MAX_OVERLAP_RATIO)
+    bot.say(fullresp)
 
 @sopel.module.commands('talk', 'wb')
 def wafflebot_talk(bot, trigger):
@@ -84,7 +95,7 @@ def wafflebot_talk(bot, trigger):
   else:
     if nick:
       model = WaffleBotText("\n".join([r.decode('utf8') for r in results]), state_size=3)
-      resp = model.make_short_sentence(75,
+      resp = model.make_short_sentence(140,
         max_overlap_total=MAX_OVERLAP_TOTAL,
         max_overlap_ratio=MAX_OVERLAP_RATIO)
       bot.say(resp)
