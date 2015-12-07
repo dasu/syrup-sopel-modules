@@ -7,6 +7,13 @@ import re
 from youtoob import fetch_video_info 
 #youtoob is this module slightly renamed: https://github.com/ridelore/willie-modules/blob/master/youtube.py
 import soundcloud
+from mutagen.easyid3 import EasyID3
+import requests
+import shutil
+import random
+import string
+#what a mess
+
 
 def soundcloudtitle(link):
     client = soundcloud.Client(client_id='clientidgoeshere')
@@ -49,6 +56,20 @@ def sotd(bot, trigger):
                 song = yt['title']
             elif(domain.netloc == 'soundcloud.com' or domain.netloc == 'www.soundcloud.com'):
                 song = soundcloudtitle(link)
+                elif(domain.netloc == 'i.sc0tt.net'):
+                filename = "/tmp/{0}".format(''.join(random.choice(string.ascii_lowercase) for i in range(10))+".mp3")
+                response = requests.head(link)
+                if (int(response.headers['Content-Length']) < 26214400):
+                    try:
+                        r = requests.get(link,stream=True)
+                        with open(filename,'wb') as x:
+                            shutil.copyfileobj(r.raw, x)
+                        a = EasyID3(filename)
+                        song = a['artist'][0]+" - "+a['title'][0]
+                    except:
+                        song = ""
+                else:
+                    song = ""
             else:    
                 song = ""
             sdate = datetime.datetime.now()
@@ -59,3 +80,8 @@ def sotd(bot, trigger):
     else:
         res = mysql(action='select')
         bot.say("Last SotD: {0}".format(res[2]))
+
+@sopel.module.commands('sotdweb')
+@sopel.module.commands('websotd')
+def(bot,trigger):
+    bot.say("Website for history: website1 OR website2")
