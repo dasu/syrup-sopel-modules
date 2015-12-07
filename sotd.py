@@ -83,5 +83,5 @@ def sotd(bot, trigger):
 
 @sopel.module.commands('sotdweb')
 @sopel.module.commands('websotd')
-def(bot,trigger):
+def sotdweb(bot,trigger):
     bot.say("Website for history: website1 OR website2")
