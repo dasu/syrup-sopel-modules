@@ -8,7 +8,6 @@ def getinfo(gdqlist,now):
     game,runner,category,comment,eta,nextgame,nextrunner,nextcategory,nexteta,nextcomment = '','','','','','','','','',''
     for item in gdqlist:
         starttime = item[1]
-        #print(starttime)
         offset = datetime.strptime(item[4], "%H:%M:%S")
         endtime = starttime + timedelta(hours = offset.hour, minutes = offset.minute, seconds=offset.second)
         if starttime < now and endtime > now:
@@ -39,7 +38,6 @@ def gdq(bot,trigger):
 
     year = datetime.today().year+1 if datetime.today().month is 12 else datetime.today().year
     now = datetime.now()
-    #delta = datetime(2016,1,3,12,00) - now
     for cell in r['feed']['entry']:
         if cell['gs$cell']['col'] == '1':
             if cell['gs$cell']['$t']:
@@ -48,15 +46,10 @@ def gdq(bot,trigger):
                     date = cell['gs$cell']['$t']
                 except:
                     pass
-                #print(date)
         if cell['gs$cell']['col'] == '2':
-            print(row+" "+cell['gs$cell']['row'])
             if row<cell['gs$cell']['row']:
-                #break
-                #pdb.set_trace()
                 row
                 if (game != 'Game') and (game != ''):
-                    print(game+" added")
                     gdqlist+=[[game, dati, category, runners, estimate, setup, comment]]
             row = cell['gs$cell']['row']
             game, runners, time, category, estimate, setup, comment = '','','','','','',''
