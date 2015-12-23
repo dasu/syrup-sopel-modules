@@ -48,7 +48,6 @@ def gdq(bot,trigger):
                     pass
         if cell['gs$cell']['col'] == '2':
             if row<cell['gs$cell']['row']:
-                row
                 if (game != 'Game') and (game != ''):
                     gdqlist+=[[game, dati, category, runners, estimate, setup, comment]]
             row = cell['gs$cell']['row']
