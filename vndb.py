@@ -25,7 +25,7 @@ def login(sock):
 
 def recv(sock):
     data = sock.recv(4096)
-    if not str(data, "utf-8").endswith("\x04"):
+    if not data.endswith(b"\x04"):
         data += recv(sock)
     return data
 
