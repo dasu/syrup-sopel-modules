@@ -61,7 +61,7 @@ def nextbday(bot, trigger):
     else:
         btoday = 0
         for c in dict.items():
-            if c[1].date() == datetime.today().replace(year=1900).date():
+            if c[1].date() == datetime.today().replace(year=1904).date():
                 btoday = "Today is {0} birthday!".format(c[0])
     
         nname=res[0][0]
