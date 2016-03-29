@@ -55,7 +55,8 @@ def get_wind(forecast):
         if forecast.json()['flags']['units'] == 'us':
             wind_data = forecast.json()['currently']['windSpeed']
             kph = float(wind_data / 0.62137)
-            m_s = float(round(kph / 3.6, 1))
+            #m_s = float(round(kph / 3.6, 1))
+            m_s = float(round(wind_data, 1))
             speed = int(round(kph / 1.852, 0))
             unit = 'mph'
         elif forecast.json()['flags']['units'] == 'si':
@@ -73,7 +74,8 @@ def get_wind(forecast):
         else:
             wind_data = forecast.json()['currently']['windSpeed']
             kph = float(wind_data / 0.62137)
-            m_s = float(round(kph / 3.6, 1))
+            #m_s = float(round(kph / 3.6, 1))
+            m_s = float(round(wind_data, 1))
             speed = int(round(kph / 1.852, 0))
             unit = 'mph'
         degrees = int(forecast.json()['currently']['windBearing'])
