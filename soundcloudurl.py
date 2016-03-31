@@ -15,11 +15,7 @@ def shutdown(bot):
 
 @sopel.module.rule('.*(https?:\/\/soundcloud.com\/.*?\/.*?((?=[\s])|$))')
 def soundcloudirc(bot, trigger, match=None):
-    client = soundcloud.Client(
-        client_id='',
-        client_secret='',
-        username='',
-        password='')
+    client = soundcloud.Client(client_id='')
     match = match or trigger
     try:
         track = client.get('/resolve', url=match.group(1), client_id='')
@@ -35,7 +31,7 @@ def soundcloudirc(bot, trigger, match=None):
         seconds = float(ms)/1000
         time = "%02i:%02i" % ( minutes, seconds) if hours is 0 else "%02i:%02i:%02i" % (hours, minutes, seconds)
         genre = track.genre
-        bot.say("{0} - {1} [{2}] ►:{3} ❤:{4} Genre: {5}".format(artist,title,time,plays,favorites,genre))
+        bot.say(u"{0} - {1} [{2}] ►:{3} ❤:{4} Genre: {5}".format(artist,title,time,plays,favorites,genre))
     if track.kind == 'playlist':
         title = track.title
         artist = track.user['username']
@@ -45,4 +41,4 @@ def soundcloudirc(bot, trigger, match=None):
         time = "%02i:%02i" % ( minutes, seconds) if hours is 0 else "%02i:%02i:%02i" % (hours, minutes, seconds)
         track_count = track.track_count
         genre = track.genre
-        bot.say("{0} - {1} [{2}] Tracks: {3} Genre: {4}".format(artist,title,time,track_count,genre))
+        bot.say(u"{0} - {1} [{2}] Tracks: {3} Genre: {4}".format(artist,title,time,track_count,genre))
