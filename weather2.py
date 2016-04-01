@@ -4,15 +4,19 @@
 # Licensed under the Eiffel Forum License 2.
 # A modification of sopel's weather.py after it was broken by yahoo's requirement for oauth authentication 
 # This module requires api keys for forecast.io and google url shortener
-# This can be cleaned up a lot and made more efficient. 
+# This can be cleaned up a lot and made more efficient.
 from __future__ import unicode_literals, absolute_import, print_function, division
 import requests
 import json
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
+forecastapi = '' #forecast.io API key.
+gurlapi = '' #google url shortner api key
+
 def get_short_url(gurl):
-    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key=API_KEY_GOES_HERE'
+    global gurlapi
+    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key={0}'.format(gurlapi)
     payload = {'longUrl': gurl}
     headers = {'content-type': 'application/json'}
     r = requests.post(short_url_service, data=json.dumps(payload), headers=headers)
@@ -55,7 +59,6 @@ def get_wind(forecast):
         if forecast.json()['flags']['units'] == 'us':
             wind_data = forecast.json()['currently']['windSpeed']
             kph = float(wind_data / 0.62137)
-            #m_s = float(round(kph / 3.6, 1))
             m_s = float(round(wind_data, 1))
             speed = int(round(kph / 1.852, 0))
             unit = 'mph'
@@ -74,7 +77,6 @@ def get_wind(forecast):
         else:
             wind_data = forecast.json()['currently']['windSpeed']
             kph = float(wind_data / 0.62137)
-            #m_s = float(round(kph / 3.6, 1))
             m_s = float(round(wind_data, 1))
             speed = int(round(kph / 1.852, 0))
             unit = 'mph'
@@ -140,15 +142,14 @@ def get_alert(forecast):
 @example('.weather London')
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""
+    global forecastapi
     location = trigger.group(2)
-    woeid = ''
-    body = ''
-    first_result = ''
-    alert = ''
+    woeid,body,first_result,alert,result = '','','','',''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         body = reversewoeid_search(woeid)
-        longlat = body.json()['query']['results']['place']['centroid']['latitude']+","+body.json()['query']['results']['place']['centroid']['longitude']
+        result = body.json()['query']['results']['place']
+        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
         if not woeid:
             return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
@@ -157,28 +158,40 @@ def weather(bot, trigger):
         woeid = bot.db.get_nick_value(location, 'woeid')
         if woeid is None:
             first_result = woeid_search(location)
-            if type(first_result.json()['query']['results']['place']) is list:
+            result = first_result.json()['query']['results']['place']
+            if type(result) is list:
                 woeid = 'filler'
-                longlat = first_result.json()['query']['results']['place'][0]['centroid']['latitude']+","+first_result.json()['query']['results']['place'][0]['centroid']['longitude']
+                longlat = result[0]['centroid']['latitude']+","+result[0]['centroid']['longitude']
             else:
                 woeid = 'filler'
-                longlat = first_result.json()['query']['results']['place']['centroid']['latitude']+","+first_result.json()['query']['results']['place']['centroid']['longitude']
+                longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
     if not woeid:
         return bot.reply("I don't know where that is.")
-    forecast = requests.get('https://api.forecast.io/forecast/API_KEY_GOES_HERE/%s?units=auto' % longlat)
+    forecast = requests.get('https://api.forecast.io/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
     if body:
-        location = body.json()['query']['results']['place']['name']
-    else:
-        if type(first_result.json()['query']['results']['place']) is list:
-            location = first_result.json()['query']['results']['place'][0]['name']
+        result = body.json()['query']['results']['place']
+        if result['locality1']:
+            location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
         else:
-            location = first_result.json()['query']['results']['place']['name'] 
+            location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
+    else:
+        result = first_result.json()['query']['results']['place']
+        if type(result) is list:
+            if result[0]['locality1']:
+                location = result[0]['locality1']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
+            else:
+                location = result[0]['admin2']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
+        else:
+            if result['locality1']:
+                location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
+            else:
+                location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
     summary = forecast.json()['currently']['summary']
     temp = get_temp(forecast)
     humidity = forecast.json()['currently']['humidity']
     wind = get_wind(forecast)
     alert = get_alert(forecast)
-    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s' % (location, summary, temp, round(humidity*100), wind, alert ))
+    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s' % (location, summary, temp, round(humidity*100), wind, alert))
 
 @commands('setlocation', 'setwoeid')
 @example('.setlocation Columbus, OH')
@@ -187,7 +200,6 @@ def update_woeid(bot, trigger):
     if not trigger.group(2):
         bot.reply('Give me a location, like "Washington, DC" or "London".')
         return NOLIMIT
-	
     first_result = woeid_search(trigger.group(2))
     if first_result is None:
         return bot.reply("I don't know where that is.")
