@@ -155,6 +155,7 @@ def weather(bot, trigger):
         longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
     else:
         location = location.strip()
+        longlat = None
         woeid = bot.db.get_nick_value(location, 'woeid')
         if woeid is None:
             first_result = woeid_search(location)
