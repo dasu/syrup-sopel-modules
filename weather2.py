@@ -147,12 +147,12 @@ def weather(bot, trigger):
     woeid,body,first_result,alert,result = '','','','',''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
-        body = reversewoeid_search(woeid)
-        result = body.json()['query']['results']['place']
-        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
         if not woeid:
             return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+        body = reversewoeid_search(woeid)
+        result = body.json()['query']['results']['place']
+        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
     else:
         location = location.strip()
         woeid = bot.db.get_nick_value(location, 'woeid')
