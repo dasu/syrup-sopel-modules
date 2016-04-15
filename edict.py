@@ -1,32 +1,27 @@
-from urllib.request import urlopen, quote
+import requests
 from bs4 import BeautifulSoup
 import sopel
+
+def get_defintion(word,search_method):
+    result = requests.get("http://nihongo.monash.edu/cgi-bin/wwwjdic?{0}{1}".format(search_method,word))
+    return BeautifulSoup(result.content)
+
 @sopel.module.commands('edict')
 @sopel.module.example('.edict word/character')
 def edict(bot, trigger):
     if not trigger.group(2):
         return bot.say("Please enter a word.")
-    i = trigger.group(2)
+    word = trigger.group(2)
     try:
-        i.encode('ascii')
-        print(i)
-        x = urlopen("http://nihongo.monash.edu/cgi-bin/wwwjdic?1ZDJ{0}".format(i))
-        c = x.read()
-        bs = BeautifulSoup(c)
-        #print(bs)
-        if bs.pre:
-            res = bs.pre.contents[0].splitlines()[1]
-            #print(res)
+        word.encode('ascii')
+        edict_return = get_defintion(word,'1ZDJ')
+        if edict_return.pre:
+            return bot.say(edict_return.pre.contents[0].splitlines()[1])
         else:
-            res = "No matches found."
-        bot.say(res)
+            return bot.say("No matches found.")
     except:
-        print(i)
-        x = urlopen("http://nihongo.monash.edu/cgi-bin/wwwjdic?1ZIK{0}".format(quote(i)))
-        c = x.read()
-        bs = BeautifulSoup(c)
-        if bs.li:
-            res = bs.li.contents[0]
+        edict_return = get_defintion(word,'1ZIK')
+        if edict_return.li:
+            return bot.say(edict_return.li.contents[0])
         else:
-            res = "No matches found."
-        bot.say(res)
+            return bot.say("No matches found.")
