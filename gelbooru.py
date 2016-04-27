@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import re
+import sopel
+from sopel.tools import SopelMemory
 
 gelregex = re.compile('.*(https?:\/\/gelbooru.com\/.*?id=(\d+).*?((?=[\s])|$))')
 
