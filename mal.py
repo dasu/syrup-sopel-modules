@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import sopel
 import re
+from sopel.tools import SopelMemory
 
 malregex = re.compile('.*(https?:\/\/myanimelist.net\/anime\/(\d+)((?=[\s])|$))')
 
