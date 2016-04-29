@@ -10,6 +10,7 @@ import requests
 import json
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
+import datetime
 
 forecastapi = '' #forecast.io API key.
 gurlapi = '' #google url shortner api key
@@ -138,18 +139,16 @@ def get_alert(forecast):
     except:
         return ''        
 
-@commands('weather', 'wea')
-@example('.weather London')
-def weather(bot, trigger):
-    """.weather location - Show the weather at the given location."""
+def get_forecast(bot,trigger,location=None):
     global forecastapi
-    location = trigger.group(2)
-    woeid,body,first_result,alert,result = '','','','',''
+    forecast,woeid,body,first_result,alert,result,error = '','','','','','',''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
+            bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            error = 'yes'
+            return location, forecast, error
         body = reversewoeid_search(woeid)
         result = body.json()['query']['results']['place']
         longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
@@ -167,7 +166,9 @@ def weather(bot, trigger):
                 woeid = 'filler'
                 longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
     if not woeid:
-        return bot.reply("I don't know where that is.")
+        bot.reply("I don't know where that is.")
+        error = 'yes'
+        return location,forecast, error
     forecast = requests.get('https://api.forecast.io/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
     if body:
         result = body.json()['query']['results']['place']
@@ -187,6 +188,41 @@ def weather(bot, trigger):
                 location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
             else:
                 location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
+    return location, forecast, error
+
+@commands('weather7', 'wea7')
+@example('.weather7 London')
+def weather7(bot,trigger):
+    location = trigger.group(2)
+    if not location:
+        location, forecast, error = get_forecast(bot,trigger)
+    else:
+        location, forecast, error = get_forecast(bot,trigger,location)
+    if error:
+        return
+    summary = forecast.json()['daily']['summary']
+    sevendays = []
+    weekdays = {1:'M',2:'Tu',3:'W',4:'Th',5:'F',6:'Sa',7:'Su'}
+    for day in forecast.json()['daily']['data']:
+        wkday = weekdays[datetime.datetime.fromtimestamp(int(day['time'])).isoweekday()]
+        maxtemp = round(day['temperatureMax'])
+        mintemp = round(day['temperatureMin'])
+        sevendays.append("{0}:({1}|{2})".format(wkday,mintemp,maxtemp))
+    del sevendays[0]
+    sevendays = ", ".join(sevendays)
+    bot.say("{0}: [{1}] {2}".format(location, summary, str(sevendays)))
+
+@commands('weather', 'wea')
+@example('.weather London')
+def weather(bot, trigger):
+    """.weather location - Show the weather at the given location."""
+    location = trigger.group(2)
+    if not location:
+        location, forecast, error = get_forecast(bot,trigger)
+    else:
+        location, forecast, error = get_forecast(bot,trigger,location)
+    if error:
+        return
     summary = forecast.json()['currently']['summary']
     temp = get_temp(forecast)
     humidity = forecast.json()['currently']['humidity']
