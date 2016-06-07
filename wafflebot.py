@@ -111,3 +111,13 @@ def wafflebotknows(bot,trigger):
   knows = len(fullresults)
   bot.say("I know about %s things" % (knows))
 
+@sopel.module.commands('lines')
+def lines(bot,trigger):
+  if not trigger.group(2):
+    return bot.say("Enter a nick")
+  db = redis.Redis(db=0)
+  linessaid = 0
+  for x in db.keys("*{0}".format(trigger.group(2))):
+    print(x)
+    linessaid+=len(db.smembers(x))
+  bot.say("{} has said {} lines".format(trigger.group(2),linessaid))
