@@ -183,15 +183,19 @@ def get_forecast(bot,trigger,location=None):
                 location = result[0]['locality1']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
             elif result[0]['admin2']:
                 location = result[0]['admin2']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
-            else:
+            elif result[0]['admin1']:
                 location = result[0]['admin1']['content'] + ", " + result[0]['country']['content']
+            else:
+                location = result[0]['name']
         else:
             if result['locality1']:
                 location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
             elif result['admin2']:
                 location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-            else:
+            elif result['admin1']:
                 location = result['admin1']['content'] + ", " + result['country']['content']
+            else:
+                location = result['name']
     return location, forecast, error
 
 @commands('weather7', 'wea7')
