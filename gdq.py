@@ -8,7 +8,11 @@ def getinfo(run,now):
     game,runner,console,comment,eta,nextgame,nextrunner,nextconsole,nexteta,nextcomment = '','','','','','','','','',''
     for item in schedule:
         group = item.find_all('td')
-        group2 = item.find_next_sibling().find_all('td')
+        try:
+            group2 = item.find_next_sibling().find_all('td')
+        except:
+            nextgame = False
+            return (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment)
         st = group[0].getText()
         #estfix = timedelta(hours=-5)
         starttime = datetime.strptime(st, '%Y-%m-%dT%H:%M:%SZ' )
@@ -36,15 +40,16 @@ def getinfo(run,now):
             nextgame = 'done'
             nextrunner = 'done'
     return (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment)
-            
+
 
 @sopel.module.commands('gdq','sgdq','agdq')
 def gdq(bot, trigger):
     now = datetime.utcnow()
     now = now.replace(tzinfo=timezone.utc)
-    delta = datetime(2016,7,3,16,30,tzinfo=timezone.utc) - now
-    textdate = "July 3"
+    delta = datetime(2017,1,8,16,30,tzinfo=timezone.utc) - now
+    textdate = "Jan 8"
     url = 'https://gamesdonequick.com/schedule'
+    #req = urllib.request.Request(url,data=None,headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
     try:
         x = requests.get(url).content
     except:
@@ -57,10 +62,12 @@ def gdq(bot, trigger):
     except:
         return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2), textdate))
     (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
+    if not nextgame:
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2),textdate))
     if now < gdqstart:
         tts = gdqstart - now
         if tts.days <= 3:
-            return bot.say("GDQ is {0}H{1}M away.  First game: {2} by {3} ETA: {4} Comment: {5} | https://gamesdonequick.com/schedule".format(int(tts.total_seconds() // 3600),int((tts.total_seconds() % 3600) // 60), nextgame, nextrunner, nexteta, nextcomment))
+            return bot.say("GDQ is {0}H{1}M away.  First game: {2} by {3} ETA: {4} Comment: {5} | https://gamesdonequick.com/schedule".format(int(tts.total_seconds() // 3600),int((tts.total_seconds() % 3600) // 60), nextgame, nextrunner, $
         else:
             return bot.say("GDQ is {0} days away ({1}) | https://gamesdonequick.com/schedule".format(tts.days+round((tts.seconds/86400),2),gdqstart.strftime('%m/%d/%Y')))
 
