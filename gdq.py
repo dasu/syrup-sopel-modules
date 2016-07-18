@@ -55,7 +55,10 @@ def gdq(bot, trigger):
     except:
         return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2),textdate))
     bs = BeautifulSoup(x)
-    run = bs.find("table",{"id":"runTable"}).tbody
+    try:
+        run = bs.find("table",{"id":"runTable"}).tbody
+    except:
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2), textdate))
     try:
         gdqstart = datetime.strptime(run.td.getText(), '%Y-%m-%dT%H:%M:%SZ')
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
