@@ -12,7 +12,6 @@ MAX_OVERLAP_TOTAL = 15
 global llines
 llines = 0
 
-
 db = redis.Redis(db=0)
 class WaffleBotText(markovify.Text):
   def test_sentence_input(self, sentence):
@@ -67,11 +66,19 @@ def wafflebot(bot, trigger):
   llines+=1
   if llines > 1000:
     llines = 0
+    nicklist = []
+    nicks = bot.channels[trigger.sender.lower()].users
+    for nick in nicks:
+      nicklist.append(nick)
     fullresp = fullmodel.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
+          max_overlap_total=MAX_OVERLAP_TOTAL,
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
+    while any(word in fullresp.split() for word in nicklist):
+      fullresp = fullmodel.make_short_sentence(140,
+          max_overlap_total=MAX_OVERLAP_TOTAL,
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
     bot.say(fullresp)
-
+  
 @sopel.module.commands('talk', 'wb')
 def wafflebot_talk(bot, trigger):
   nick = trigger.group(2)
@@ -95,14 +102,30 @@ def wafflebot_talk(bot, trigger):
   else:
     if nick:
       model = WaffleBotText("\n".join([r.decode('utf8') for r in results]), state_size=3)
+      nicklist = []
+      nicks = bot.channels[trigger.sender.lower()].users
+      for nick in nicks:
+        nicklist.append(nick)
       resp = model.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
+          max_overlap_total=MAX_OVERLAP_TOTAL,
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
+      while any(word in resp.split() for word in nicklist):
+        resp = model.make_short_sentence(140,
+          max_overlap_total=MAX_OVERLAP_TOTAL, 
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
       bot.say(resp)
     else:
+      nicklist = []
+      nicks = bot.channels[trigger.sender.lower()].users
+      for nick in nicks:
+        nicklist.append(nick)
       fullresp = fullmodel.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
+          max_overlap_total=MAX_OVERLAP_TOTAL,
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
+      while any(word in fullresp.split() for word in nicklist):
+        fullresp = fullmodel.make_short_sentence(140,
+          max_overlap_total=MAX_OVERLAP_TOTAL,
+          max_overlap_ratio=MAX_OVERLAP_RATIO)
       bot.say(fullresp)
 
 @sopel.module.commands('wbknows')
