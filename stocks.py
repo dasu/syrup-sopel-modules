@@ -1,4 +1,3 @@
-
 import sopel
 import json
 import requests
@@ -20,4 +19,4 @@ def stocks(bot,trigger):
     current = data['l_fix']
     change = data['c_fix']
     percent = data['cp_fix']
-    bot.say("{0} (15m delay)| Current: {1}, {2} ({3}), Start: {4}".format(name,current,"\x0304"+change+"\x0F" if float(change) < 0 else "\x0303"+change+"\x0F","\x0304"+percent+"%\x0F" if float(percent) < 0 else "\x0303"+percent+"%\x0F",start))
+    bot.say("{0}: {1} ({2}/{3}) from {4}".format(name,current,"\x0304"+change+"\x0F" if float(change) < 0 else "\x0303+"+change+"\x0F","\x0304"+percent+"%\x0F" if float(percent) < 0 else "\x0303+"+percent+"%\x0F",start))
