@@ -24,5 +24,5 @@ def nicovideoirc(bot, trigger, match=None):
     seconds = nico._video[id].length
     duration = '%d:%02d' % (seconds / 60, seconds % 60)
     views = nico._video[id].view_counter
-    tags = ", ".join(random.sample(nico._video['sm29340570'].tags,3)) if len(nico._video['sm29340570'].tags) > 3 else ", ".join(nico._video['sm29340570'].tags)
+    tags = ", ".join(random.sample(nico._video[id].tags,3)) if len(nico._video[id].tags) > 3 else ", ".join(nico._video[id].tags)
     bot.say(u"{} [{}]| ►:{} | Tags: {}".format(title,duration,views,tags))
