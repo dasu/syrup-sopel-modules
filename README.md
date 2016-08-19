@@ -34,6 +34,8 @@ A simple module made for a certain retard that checks if a certain presidential 
 Anime module to check myanimelist for show info, can also check for manga, VAs, characters, etc.  gives stats on animu if a mal url is posted.  Requires whitelisted MAL api user-agent key, and base 64 encoded username:password 
 #####mtg.py
 Magic the Gathering module.  Get info on a specific card.
+#####nicovideourl.py
+Outputs information on nicovideo urls when they're posted to the channel.
 #####pb.py
 Pushbullet module.  At work and someone posted a link to something interesting, but can't/shouldn't view it?  Push it to your phone instead to safely view it.  Requires pushbullet API key.
 #####pixiv.py
