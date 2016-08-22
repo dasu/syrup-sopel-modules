@@ -11,6 +11,10 @@ import requests
 import shutil
 import random
 import string
+import youtube_dl
+import subprocess
+import os
+from nicovideo import Nicovideo
 #what a mess
 
 def convert_date(date):
@@ -51,21 +55,41 @@ def fetch_yt_video_info(bot,id):
         'dislikes': video['statistics'].get('dislikeCount') or '0',
         'link': 'https://youtu.be/' + video['id']
     }
-    return info
+    bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'prefer_ffmpeg': True,
+        'quiet': True,
+        'outtmpl': '/path/to/songs/folder/{}'.format(bksongname+".%(ext)s")
+    }
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        x = ydl.download(['http://www.youtube.com/watch?v={}'.format(id)])
+    os.chdir('/path/to/songs/folder/')
+    subprocess.call(['ffmpeg','-y','-i','{}.webm'.format(bksongname),'{}.mp3'.format(bksongname)],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return info, bksongname
     
     
-def soundcloudtitle(link):
+def soundcloudinfo(link):
     client = soundcloud.Client(client_id='')
     track = client.get('/resolve', url = link, client_id='')
-    return "{0} - {1}".format(track.user['username'],track.title)
+    stream = "https://api.soundcloud.com/i1/tracks/{}/streams?client_id={}".format(track.id,client.client_id)
+    try:
+        stream_url = requests.get(stream).json()['http_mp3_128_url']
+        r = requests.get(stream_url)
+        bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))+".mp3"
+        with open('/path/to/songs/folder/{}'.format(bksongname), 'wb') as f:
+            f.write(r.content)
+    except:
+        bksongname = ""
+    return "{0} - {1}".format(track.user['username'],track.title),bksongname
+        
 
-
-def mysql(name=None, link=None, song=None, sdate=None, action=None):
+def mysql(name=None, link=None, song=None, sdate=None, bksongname=None, action=None):
     connection = pymysql.connect(host='', user='',passwd='', db='',charset='utf8')
     cursor = connection.cursor()
     if action == 'insert':
-        sql = "INSERT INTO sotd (name, link, song, sdate) VALUES(%s,%s,%s,%s)"
-        cursor.execute(sql, (name, link, song, sdate))
+        sql = "INSERT INTO sotd (name, link, song, sdate, dlname) VALUES(%s,%s,%s,%s,%s)"
+        cursor.execute(sql, (name, link, song, sdate, bksongname))
         connection.commit()
 
     if action == 'select':
@@ -82,21 +106,25 @@ def mysql(name=None, link=None, song=None, sdate=None, action=None):
 @sopel.module.example('.sotd weblink | website for history: weblink')
 def sotd(bot, trigger):
     if(trigger.group(2)):
-        match = re.match(r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}(youtube|youtu|sc0tt|pomf|soundcloud|bandcamp)\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)', trigger.group(2), re.I)
+        match = re.match(r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}(youtube|youtu|sc0tt|soundcloud|bandcamp|nicovideo)\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)', trigger.group(2), re.I)
         if match:
+            bksongname = ""
             name = Identifier(trigger.nick)
             link = match.group(0)
             domain = urlparse(link)
             if(domain.netloc == 'youtu.be' or domain.netloc == 'www.youtu.be'):
-                yt = fetch_yt_video_info(bot, domain.path[1:])
+                yt,bksongname = fetch_yt_video_info(bot, domain.path[1:])
                 song = yt['title']
+                bksongname=bksongname+".mp3"
             elif(domain.netloc == 'youtube.com' or domain.netloc == 'www.youtube.com'):
-                yt = fetch_yt_video_info(bot, domain.query[2:])
+                yt,bksongname = fetch_yt_video_info(bot, domain.query[2:])
                 song = yt['title']
+                bksongname=bksongname+".mp3"
             elif(domain.netloc == 'soundcloud.com' or domain.netloc == 'www.soundcloud.com'):
-                song = soundcloudtitle(link)
+                song,bksongname = soundcloudinfo(link)
             elif(domain.netloc == 'i.sc0tt.net'):
-                filename = "/tmp/{0}".format(''.join(random.choice(string.ascii_lowercase) for i in range(10))+".mp3")
+                bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))+".mp3"
+                filename = "/path/to/songs/folder/{0}".format(bksongname)
                 response = requests.head(link)
                 if (int(response.headers['Content-Length']) < 26214400):
                     try:
@@ -117,10 +145,15 @@ def sotd(bot, trigger):
                     song = "{0} - {1}".format(artist,title)
                 except:
                     song = ""
+            elif(domain.netloc == 'nicovideo.jp' or domain.netloc == 'www.nicovideo.jp'):
+                id = domain.path[7:]
+                nico = Nicovideo()
+                nico.append(id)
+                title = nico._video[id].title
             else:
                 song = ""
             sdate = datetime.datetime.now()
-            mysql(name, link, song, sdate,'insert')
+            mysql(name, link, song, sdate, bksongname,'insert')
             return bot.say("Song saved.")
         else:
             return bot.say("Enter a valid link.")
@@ -131,4 +164,5 @@ def sotd(bot, trigger):
 @sopel.module.commands('sotdweb')
 @sopel.module.commands('websotd')
 def sotdweb(bot,trigger):
-    bot.say("Website for history: weblink1 OR weblink2")
+    bot.say("Website for history: weblink")
+
