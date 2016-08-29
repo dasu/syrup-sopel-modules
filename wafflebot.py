@@ -73,7 +73,7 @@ def wafflebot(bot, trigger):
     fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
-    while any(word in fullresp.split() for word in nicklist):
+    while any(word in fullresp.lower().split() for word in nicklist):
       fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
@@ -109,7 +109,7 @@ def wafflebot_talk(bot, trigger):
       resp = model.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
-      while any(word in resp.split() for word in nicklist):
+      while any(word in resp.lower().split() for word in nicklist):
         resp = model.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL, 
           max_overlap_ratio=MAX_OVERLAP_RATIO)
@@ -122,7 +122,7 @@ def wafflebot_talk(bot, trigger):
       fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
-      while any(word in fullresp.split() for word in nicklist):
+      while any(word in fullresp.lower().split() for word in nicklist):
         fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
