@@ -1,144 +1,253 @@
 """
-FOR SYNCING AND SYNC CLUB ver 0.8
-Written by agricola
+Rework of sync. Allows users to ready 
+and sync movies or whatever.
 """
 from threading import Timer
+from sopel.module import commands
 from time import sleep
-import willie
-from willie.tools import Identifier
+from sopel.tools import Identifier
 
-#sync club related below
-@willie.module.commands('sc','syncclub')
-def club(bot,trigger):
-    '''
-    Returns the secret sync club link. Members only!
-    '''
-    bot.say("http://www.tinyurl.com/syncclub")
+_current_sync = None # holds the current sync object being used
 
+class Sync:
+    DESYNC_TO_CANCEL_MESSAGE = "Type '.desync' if you would like to cancel the sync."
+    ALREADY_READY_MESSAGE = "You are already ready!"
+    BUCKLE_UP_MESSAGE = "Buckle up syncers!"
+    DESYNCING_SYNC_MESSAGE = "Desyncing..."
+    NOT_A_SYNCER_MESSAGE = "You are not part of this sync."
 
+    __syncers = []
+    __bot = None
+    __sync_timer = None
+    __channel_user_list = []
 
-#general syncing below
-@willie.module.rule('.*')
-def name(bot,trigger):
-    '''Remembers yo name
-    '''
-    inick = Identifier(trigger.nick)
-    if inick not in name.nerdlist and inick != 'py-ctcp':
-        name.nerdlist.append(inick)
-    if len(name.nerdlist)>20:
-        name.nerdlist.pop(0)
-name.nerdlist = []
+    # constructor that sets syncers and starts the mad timer
+    def __init__(self, syncer_names, bot, channel_user_list):
+        self.__channel_user_list = channel_user_list
+        self.__bot = bot
+        self.__syncers, non_valid_syncers = self.syncer_list(syncer_names)
 
-def namechecker(validnames,names_to_check):
-    '''Checks the names of the readylist to the nerdlist'''
-    wrongnames=[]
-    i=0
-    x=0
-    while i < len(names_to_check):
-        if names_to_check[i] not in validnames:
-            wrongnames.insert(x,names_to_check[i])
-            x+=1
-        i+=1
-    return wrongnames
+        if len(non_valid_syncers) > 0:
+            bot.say(self.warn_of_invalid_syncers(non_valid_syncers))
+        else:
+            self.start_timer()
 
-@willie.module.commands('sync')
-@willie.module.example('.sync <username1> <username2>')
-def sync(bot,trigger):
-    '''Starts a session to sync for various media.
-    
-    INPUT: .sync <username1> <username2> <etc>
+    # create list of syncers
+    def syncer_list(self, syncer_names):
+        syncers = []
+        non_valid_syncers = []
 
-    Creates a 1 minute timer to sync and makes a list of syncers
-    '''
-
-    if sync.sync_on==0 and len(trigger.group())>6:
-        syncers = trigger.group().lower()
-        sync.readylist = syncers.split()
-        sync.readylist.pop(0)
-        sync.namelist=list(set(sync.readylist))
-        inick = Identifier(trigger.nick)
-        if inick not in name.nerdlist:
-            name.nerdlist.append(inick)
-        badnames = namechecker(name.nerdlist,sync.namelist)
-        sync.readylist=list(set(sync.readylist))
-        if badnames == []:
-            if sync.readylist!=[] and bot.nick not in sync.readylist and len(sync.readylist)<=15:
-                    sync.madtime=Timer(60.0,mad,[bot,trigger])
-                    sync.madtime.start()
-                    bot.say("Buckle up syncers!")
-                    sync.sync_on=1
+        for syncer_name in syncer_names:
+            new_syncer = Syncer(syncer_name)
+            if self.is_syncer_valid(new_syncer):
+                syncers.append(new_syncer)
             else:
-                bot.say('fuck you')
+                non_valid_syncers.append(new_syncer)
+        return syncers, non_valid_syncers
+
+    # warn syncers of invalid syncers
+    def warn_of_invalid_syncers(self, invalid_syncers):
+        invalid_syncers_string = ""
+        
+        invalid_syncers_string = self.syncer_list_string(invalid_syncers)
+
+        invalid_syncers_string += " "
+
+        if len(invalid_syncers) == 1:
+            warning = invalid_syncers_string + "is an invalid syncer. " + self.DESYNC_TO_CANCEL_MESSAGE
+        elif len(invalid_syncers) > 1:
+            warning = invalid_syncers_string + "are invalid syncers. " + self.DESYNC_TO_CANCEL_MESSAGE
+
+        return warning
+
+    # string of syncers
+    def syncer_list_string(self, syncer_list):
+        syncer_list_string = ""
+        syncer_list_length = len(syncer_list)
+        last_index = syncer_list_length - 1
+        first_item = True
+
+        if syncer_list_length == 1:
+            syncer_list_string = syncer_list[0].name
+        elif syncer_list_length > 1:
+            i = 0
+            for invalid_syncer in syncer_list:
+                if not first_item and syncer_list_length != 2:
+                    syncer_list_string += ", "
+                if i == last_index and i > 0:
+                    syncer_list_string += " and "
+                syncer_list_string += invalid_syncer.name
+                first_item = False
+                i += 1
+        return syncer_list_string
+
+    # checks if sync is ready IS THIS NEEDED?
+    def are_all_syncers_ready(self):
+        are_all_syncers_ready = True
+
+        for syncer in self.__syncers:
+            if syncer.is_ready == False:
+                are_all_syncers_ready = False
+
+        return are_all_syncers_ready
+
+    # method that starts a timer
+    def start_timer(self):
+        self.__sync_timer=Timer(120.0, self.timeout_sync)
+        self.__sync_timer.start()
+        self.__bot.say(self.BUCKLE_UP_MESSAGE)
+
+    def timeout_sync(self):
+        self.__bot.say("Sync failed")
+        self.desync_this_sync()
+
+
+    # checks if a sync is valid
+    def is_syncer_valid(self, syncer):
+        is_syncer_valid = syncer.is_syncer_name_valid(self.__channel_user_list, self.__bot)
+        return is_syncer_valid
+
+    # initiate the sync
+    def initiate_sync(self):
+        self.desync_this_sync()
+        self.__bot.say("Lets go " + self.syncer_list_string(self.__syncers) + "!")
+        sleep(2)
+        self.__bot.say("3")
+        sleep(2)
+        self.__bot.say("2")
+        sleep(2)
+        self.__bot.say("1")
+        sleep(2)
+        self.__bot.say("GO!")
+
+
+    # sets syncer to ready
+    def ready_syncer(self, syncer_name):
+        syncer = self.find_syncer_based_on_name(syncer_name)
+
+        if self.is_syncer_part_of_sync(syncer):
+            if syncer.is_ready == False:
+                syncer.is_ready = True
+                if self.are_all_syncers_ready() == True:
+                    self.initiate_sync()
+            else:
+                self.__bot.say(ALREADY_READY_MESSAGE)
+
+    # find syncer in the sync list by name
+    def find_syncer_based_on_name(self, syncer_name):
+        syncer = None
+
+        for s in self.__syncers:
+            if Identifier(s.name) == Identifier(syncer_name.lower()):
+                syncer = s
+
+        return syncer
+
+    # checks if it contains the syncer
+    def is_syncer_part_of_sync(self, given_syncer):
+        is_part_of_sync = False
+
+        for syncer in self.__syncers:
+            if given_syncer == syncer:
+                is_part_of_sync = True
+
+        return is_part_of_sync
+
+    # desyncs the sync
+    def syncer_desync_this_sync(self, syncer_name):
+        syncer = self.find_syncer_based_on_name(syncer_name)
+
+        if syncer != None:
+            self.desync_this_sync()
+            self.__bot.say(self.DESYNCING_SYNC_MESSAGE)
         else:
-            bot.say('Never heard of {0}'.format(", ".join(badnames)))
+            self.__bot.say(self.NOT_A_SYNCER_MESSAGE)
+
+    def desync_this_sync(self):
+        global _current_sync
+        _current_sync = None
+        if self.__sync_timer != None:
+            self.__sync_timer.cancel()
+
+
+class Syncer:
+    __name = None
+    __is_ready = False
+
+    # get property of name
+    @property
+    def name(self):
+        return self.__name
+    
+    # get/set property of ready
+    @property
+    def is_ready(self):
+        return self.__is_ready
+
+    @is_ready.setter
+    def is_ready(self, value):
+        self.__is_ready = value
+
+    # constructor that sets name and checks if it is valid
+    def __init__(self, syncer_name):
+        self.__name = syncer_name.lower()
+
+    # checks if the syncer is valid
+    def is_syncer_name_valid(self, users_list, bot):
+        is_valid = False
+
+        nicknames = users_list
+
+        for nick in nicknames:
+
+            if self.__name == nick:
+                is_valid = True
+
+        return is_valid
+
+@commands('sync','syncpoi','synczura')
+def sync(bot,trigger):
+    global _current_sync
+
+    if _current_sync == None:
+        message_group = trigger.group(2)
+        if message_group != None:
+            syncer_names = message_group.split()
+        else:
+            bot.say("What are you doing, noob?")
+            return
+
+
+        channel_user_list = []
+        nicks = bot.channels[trigger.sender.lower()].users
+        for nick in nicks:
+            channel_user_list.append(Identifier(nick))
+
+
+        is_user_in_syncer_list = False
+        for name in syncer_names:
+            if Identifier(trigger.nick) == Identifier(name):
+                is_user_in_syncer_list = True
+        
+        if not is_user_in_syncer_list:
+            bot.say("Include yourself in the sync, clown.")
+            return
+
+        new_sync = Sync(syncer_names, bot, channel_user_list)
+        _current_sync = new_sync
     else:
-        bot.say('fuck you')
-sync.sync_on = 0
-sync.readylist = []
-sync.namelist = []
-sync.madtime = 0
+        bot.say("Wait for the current sync to finish")
 
-
-def mad(bot,trigger):
-    '''Bot gets mad.
-
-    Calls out people , ends sync and clears variables.
-    '''
-    bot.say('Please .ready up: ' + ", ".join(sync.readylist))
-    sleep(60)
-    if sync.readylist !=[]:
-        bot.say('Shit syncers: ' + ", ".join(sync.readylist))
-        sync.readylist=[]
-        sync.sync_on=0
-
-@willie.module.commands('ready')
-def ready(bot,trigger):
-    '''User declares they are ready.
-
-    INPUT: .ready
-
-    Removes user from the list and initiates the sync if all are ready.
-    '''
-    inick = Identifier(trigger.nick)
-    if inick in sync.readylist:
-        sync.readylist.remove(inick)
-        if sync.readylist == [] and sync.sync_on == 1:
-            sync.madtime.cancel()
-            bot.say('Lets go {0}!'.format(", ".join(sync.namelist)))
-            sleep(2)
-            bot.say("3")
-            sleep(2)
-            bot.say("2")
-            sleep(2)
-            bot.say("1")
-            sleep(2)
-            bot.say("GO!")
-            sync.sync_on=0
-    else:
-        bot.say("You're not on the list.")
-
-
-@willie.module.commands('desync')
+@commands('desync','desyncpoi','desynczura')
 def desync(bot,trigger):
-    '''Cancels sync
+    if _current_sync != None:
+        _current_sync.syncer_desync_this_sync(Identifier(trigger.nick))
+    return
 
-    INPUT: .desync
-
-    Ends the sync if user on the list
-    '''
-    inick = Identifier(trigger.nick)
-    if sync.readylist !=[] and sync.sync_on == 1:
-        if inick in sync.readylist:
-            bot.say('Aborting sync...')
-            sync.madtime.cancel()
-            sync.sync_on=0
-            sync.readylist=[]
-        else:
-            bot.say("You're not on the list.")
+@commands('ready','readypoi','readyzura')
+def ready(bot,trigger):
+    if _current_sync != None:
+        _current_sync.ready_syncer(Identifier(trigger.nick))
     else:
-        bot.say('fuck you')
-
-
-if __name__ == '__main__':
-    print(__doc__.strip())
-
+        bot.say("There is no sync.")
+    return
