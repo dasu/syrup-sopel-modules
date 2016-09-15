@@ -12,6 +12,8 @@ def stocks(bot,trigger):
         data = json.loads(x.text[6:-3])
     except:
         return bot.say("Doesn't exist.")
+    if not data['lt']:
+        return bot.say("Doesn't exist.")
     name = data['t']
     if not trigger.group(2):
         name = "Dow Jones Index"
