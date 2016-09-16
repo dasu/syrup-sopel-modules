@@ -106,6 +106,9 @@ def mysql(name=None, link=None, song=None, sdate=None, bksongname=None, action=N
 @sopel.module.example('.sotd weblink | website for history: weblink')
 def sotd(bot, trigger):
     if(trigger.group(2)):
+        res = mysql(action='select')
+        if trigger.group(2).strip() == res[2].strip():
+            return bot.say("Duplicate, song not added!")
         match = re.match(r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}(youtube|youtu|sc0tt|soundcloud|bandcamp|nicovideo)\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)', trigger.group(2), re.I)
         if match:
             bksongname = ""
