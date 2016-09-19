@@ -1,3 +1,6 @@
+#As of 09-14-2016, twitch API now requires Client-ID with all requests.  You will need to create one from here: 
+# https://www.twitch.tv/settings/connections
+# complete twitch.py rewrite coming soon™ 
 import requests
 import sopel
 import re
@@ -48,7 +51,7 @@ currently_ystreaming = {}
 @sopel.module.interval(10)
 def monitor_streamers(bot):
   streaming_names = []
-  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(streamers)}).json()
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(streamers)},headers={"Client-ID":"CLIENT_ID_GOES_HERE"}).json()
   results = []
   for streamer in streaming["streams"]:
     streamer_name = streamer["channel"]["name"]
@@ -133,7 +136,7 @@ def streamer_status(bot, trigger):
   streamer_name = trigger.group(2)
   query = streamers if streamer_name is None else streamer_name.split(" ")
 
-  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)}).json()
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)},headers={"Client-ID":"CLIENT_ID_GOES_HERE"}).json()
   results = []
   for streamer in streaming["streams"]:
     streamer_name = streamer["channel"]["name"]
@@ -201,7 +204,7 @@ def allstreamer_status(bot, trigger):
   streamer_name = trigger.group(2)
   query = streamers if streamer_name is None else streamer_name.split(" ")
 
-  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)}).json()
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)},headers={"Client-ID":"CLIENT_ID_GOES_HERE"}).json()
   results = []
   for streamer in streaming["streams"]:
     streamer_name = streamer["channel"]["name"]
@@ -252,7 +255,7 @@ def twitchirc(bot, trigger, match = None):
   match = match or trigger
   streamer_name = (match.group(0)).split("/")[-1]
   query = streamers if streamer_name is None else streamer_name.split(" ")
-  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)}).json()
+  streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)},headers={"Client-ID":"CLIENT_ID_GOES_HERE"}).json()
   results = []
   for streamer in streaming["streams"]:
     streamer_name = streamer["channel"]["name"]
