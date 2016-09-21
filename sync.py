@@ -98,7 +98,7 @@ class Sync:
         self.__bot.say(self.BUCKLE_UP_MESSAGE)
 
     def timeout_sync(self):
-        self.__bot.say("Sync failed")
+        self.__bot.say("Sync failed.")
         self.desync_this_sync()
 
 
@@ -110,7 +110,7 @@ class Sync:
     # initiate the sync
     def initiate_sync(self):
         self.desync_this_sync()
-        self.__bot.say("Lets go " + self.syncer_list_string(self.__syncers) + "!")
+        self.__bot.say("Let's go " + self.syncer_list_string(self.__syncers) + "!")
         sleep(2)
         self.__bot.say("3")
         sleep(2)
@@ -236,7 +236,7 @@ def sync(bot,trigger):
         new_sync = Sync(syncer_names, bot, channel_user_list)
         _current_sync = new_sync
     else:
-        bot.say("Wait for the current sync to finish")
+        bot.say("Wait for the current sync to finish.")
 
 @commands('desync','desyncpoi','desynczura')
 def desync(bot,trigger):
