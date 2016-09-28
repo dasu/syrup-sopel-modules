@@ -9,7 +9,7 @@ from sopel.tools import Identifier
 
 DESYNC_TO_CANCEL_MESSAGE = "Type '.desync' if you would like to cancel the sync."
 ALREADY_READY_MESSAGE = "You are already ready!"
-BUCKLE_UP_MESSAGE = "Buckle up syncers!"
+BUCKLE_UP_MESSAGE = "Buckle up "
 DESYNCING_SYNC_MESSAGE = "Desyncing..."
 NOT_A_SYNCER_MESSAGE = "You are not part of this sync."
 IS_INVALID_MESSAGE = "is an invalid syncer. "
@@ -22,6 +22,7 @@ NO_SYNC_MESSAGE = "There is no sync."
 NO_PREV_SYNC_MESSAGE = "No previous sync."
 WAS_LAST_SYNCER_MESSAGE = "was in the last sync."
 WERE_LAST_SYNCERS_MESSAGE = "were in the last sync."
+NOT_IN_PREV_SYNC_MESSAGE = "You were not in the last sync."
 
 _current_sync = None # holds the current sync object being used
 _previous_sync = None
@@ -118,7 +119,7 @@ class Sync:
     def start_timer(self):
         self.__sync_timer=Timer(120.0, self.timeout_sync)
         self.__sync_timer.start()
-        self.__bot.say(BUCKLE_UP_MESSAGE)
+        self.__bot.say(BUCKLE_UP_MESSAGE + self.syncer_list_string(self.__syncers) + "!")
 
     def timeout_sync(self):
         self.__bot.say(SYNC_FAILED_MESSAGE)
@@ -236,6 +237,13 @@ def channel_user_list(bot, trigger):
         channel_user_list.append(Identifier(nick))
     return channel_user_list
 
+def is_in_syncer_list(trigger, syncer_names):
+    is_user_in_syncer_list = False
+    for name in syncer_names:
+        if Identifier(trigger.nick) == Identifier(name):
+            is_user_in_syncer_list = True
+    return is_user_in_syncer_list
+
 
 @commands('sync','syncpoi','synczura')
 def sync(bot,trigger):
@@ -251,11 +259,8 @@ def sync(bot,trigger):
 
         user_list = channel_user_list(bot, trigger)
 
-        is_user_in_syncer_list = False
-        for name in syncer_names:
-            if Identifier(trigger.nick) == Identifier(name):
-                is_user_in_syncer_list = True
-        
+        is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
+
         if not is_user_in_syncer_list:
             bot.say(INCLUDE_SELF_MESSAGE)
             return
@@ -288,6 +293,14 @@ def resync(bot,trigger):
         if _previous_sync != None:
             _current_sync = _previous_sync
             user_list = channel_user_list(bot, trigger)
+            syncer_names = _previous_sync.syncer_names
+
+            is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
+            if not is_user_in_syncer_list:
+                bot.say(NOT_IN_PREV_SYNC_MESSAGE)
+                _current_sync = None
+                return
+
             _current_sync.__init__(_previous_sync.syncer_names, bot, user_list)
         else:
             bot.say(NO_PREV_SYNC_MESSAGE)
