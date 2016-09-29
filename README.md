@@ -58,6 +58,8 @@ Module for getting info on a twitch/hitbox(and a specific user on youtube stream
 Outputs urban dictionary definitions for input words.  I'm not 100% sure where this came from, probably a modified version of this: https://github.com/mutantmonkey/phenny/blob/master/modules/urbandict.py
 #####vndb.py
 Gets information about a visual novel.  Requires tags.json to be downloaded from vndb.  You should probably rename the client name/version as well.  Based on https://github.com/theappleman/pyvndb 
+#####wait.py
+What anime is this module.  input takes a direct image link and checks whatanime.ga to find out ...what anime it is.
 #####wafflebot.py
 Markov chain bot created by sc0tt, additional functionality added by me.  Keeps track of all lines said in a channel (greater than 5 words).  You can make it output a line based on all lines side, or output a line based on content that a specific user has said.  After 1000 lines are said in a channel the bot will automatically say a line.  Will try and avoid highlighting users if they are currently in the channel.  Requires redis.  Redis setup process is completely unknown...ask sc0tt?!
 #####weather2.py
