@@ -12,7 +12,7 @@ def check_image(imgurl):
     except:
         return False
 
-@sopel.module.commands('wait','whatanime')
+@sopel.module.commands('wait')
 def wait(bot,trigger):
     if not trigger.group(2):
         return bot.say("Provide an animu screenshot")
@@ -42,10 +42,10 @@ def wait(bot,trigger):
                 animu_rom = req.json()['docs'][0]['title_romaji']
                 accuracy = round(100 - req.json()['docs'][0]['diff'],2)
                 episode = req.json()['docs'][0]['episode']
-                return bot.say("{} [{}] Episode:{} Confidence: {}".format(animu_eng,animu_rom, episode, accuracy))
+                return bot.say("{} [{}] Episode:{} Confidence: {}% | https://whatanime.ga/?url={}".format(animu_eng, animu_rom, episode, accuracy, imageurl))
             else:
                 return bot.say("No results.")
         except:
             return bot.say("Error D:")
     else:
-        return bot.say("Quota reached...maybe.  Wait an hour")
+        return bot.say("Quota reached...maybe.  Wait an hour, or check https://whatanime.ga/?url={0}".format(imageurl))
