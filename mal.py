@@ -1,4 +1,4 @@
-#MAL anime module v0.80
+#MAL anime module v0.88?
 #thanks agri for index error shit fix
 
 import requests
@@ -7,7 +7,7 @@ import sopel
 import re
 from sopel.tools import SopelMemory
 
-malregex = re.compile('.*(https?:\/\/myanimelist.net\/anime\/(\d+)((?=[\s])|$))')
+malregex = re.compile('.*(https?:\/\/myanimelist.net\/anime\/(\d+).*((?=[\s])|$))')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -17,7 +17,7 @@ def setup(bot):
 def shutdown(bot):
     del bot.memory['url_callbacks'][malregex]
 
-@sopel.module.rule('.*(https?:\/\/myanimelist.net\/anime\/(\d+)((?=[\s])|$))')
+@sopel.module.rule('.*(https?:\/\/myanimelist.net\/anime\/(\d+).*((?=[\s])|$))')
 def malirc(bot, trigger, match=None):
     match = match or trigger
     id = match.group(2)
