@@ -107,7 +107,7 @@ def character(bot,trigger):
             if not bs.body.findAll(text='Search Results'):
                 bot.say(bs.h1 + ": http://myanimelist.net" + bs.findAll(id="horiznav_nav")[0].a['href'])
             else:
-                bot.say(bs.body.findAll("table")[0].findAll("tr")[1].findAll("td")[1].a.string + " from: " + bs.body.findAll("table")[0].findAll("tr")[1].findAll('td')[2].a.string)
+                bot.say(bs.body.findAll("table")[0].findAll("tr")[1].findAll("td")[1].a.string + " from: " + bs.body.findAll("table")[0].findAll("tr")[1].findAll('td')[2].a.string + " | http://myanimelist.net" + bs.body.findAll("table")[0].findAll("tr")[1].findAll('td')[2].a['href'])
         else:
             bot.say("No results found.")
     else:
