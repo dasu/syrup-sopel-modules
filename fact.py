@@ -1,7 +1,7 @@
-import willie
+import sopel
 import random
 
-@willie.module.commands('fact')
+@sopel.module.commands('fact')
 def fact(bot, trigger):
     x = [
         "Your flesh was constructed upon the graves of hundreds of innocent beasts", 
@@ -130,6 +130,4 @@ def fact(bot, trigger):
         "Nothing will make up for the shameful things you have done"
         ]
 
-    z = random.choice(x)
-    m = ":V Fact Seagull says: \"" + z + ".\""
-    bot.say(m)
+    bot.say(":V Fact Seagull says: {}".format(random.choice(x)))
