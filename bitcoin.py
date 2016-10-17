@@ -1,7 +1,7 @@
 import json
 import decimal
 import requests
-import willie
+import sopel
 
 lastPrice = 0
 lastLTCPrice = 0
@@ -12,7 +12,7 @@ def calcdoge2usd(num):
    data = requests.get(uri).json()
    return calcbtc2usd(decimal.Decimal(num) * decimal.Decimal(data["price"]))
 
-@willie.module.commands('doge2usd')
+@sopel.module.commands('doge2usd')
 def doge2usd(bot, trigger):
    arg = trigger.group(2)
    #If an argument is provided, convert the exchange rate
@@ -22,7 +22,7 @@ def doge2usd(bot, trigger):
       output = '%s DOGE will get you $%s' % (usd, rate)
       bot.say(output)
 
-@willie.module.commands('doge')
+@sopel.module.commands('doge')
 def dogecoin(bot, trigger):
    global lastDogePrice
    uri = "http://api.cryptocoincharts.info/tradingPair/doge_btc"   
@@ -48,7 +48,7 @@ def calcusd2btc(num):
    data = requests.get(uri).json()
    return decimal.Decimal(num) * decimal.Decimal(data["usd_to_btc"])
 
-@willie.module.commands('btc')
+@sopel.module.commands('btc')
 def bitcoin(bot, trigger):
    global lastPrice
    uri = "https://coinbase.com/api/v1/prices/spot_rate"
@@ -95,7 +95,7 @@ def calcusd2ltc(num):
    return decimal.Decimal(num) * usdPerLtc
 
    
-@willie.module.commands('ltc')
+@sopel.module.commands('ltc')
 def litecoin(bot, trigger):
    global lastLTCPrice
    uri = "https://btc-e.com/api/3/ticker/ltc_usd"
@@ -109,7 +109,7 @@ def litecoin(bot, trigger):
    lastLTCPrice = decimal.Decimal(data["ltc_usd"]["last"])
    bot.say(output)
 
-@willie.module.commands('ltc2usd')
+@sopel.module.commands('ltc2usd')
 def ltc2usd(bot, trigger):
    arg = trigger.group(2)
    #If an argument is provided, convert the exchange rate
@@ -119,7 +119,7 @@ def ltc2usd(bot, trigger):
       output = 'Ł%s will get you $%.05f' % (usd, rate)
       bot.say(output)
 
-@willie.module.commands('usd2ltc')
+@sopel.module.commands('usd2ltc')
 def usd2ltc(bot, trigger):
    arg = trigger.group(2)
    #If an argument is provided, convert the exchange rate
@@ -129,7 +129,7 @@ def usd2ltc(bot, trigger):
       output = '$%s will get you Ł%.05f' % (usd, rate)
       bot.say(output)
 
-@willie.module.commands('ticker','tick')
+@sopel.module.commands('ticker','tick')
 def ticker(bot, trigger):
    bitcoin(bot, trigger)
    litecoin(bot, trigger)
