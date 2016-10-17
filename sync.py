@@ -7,7 +7,6 @@ from sopel.module import commands
 from time import sleep
 from sopel.tools import Identifier
 
-DESYNC_TO_CANCEL_MESSAGE = "Type '.desync' if you would like to cancel the sync."
 ALREADY_READY_MESSAGE = "You are already ready!"
 BUCKLE_UP_MESSAGE = "Buckle up "
 DESYNCING_SYNC_MESSAGE = "Desyncing..."
@@ -254,16 +253,14 @@ def sync(bot,trigger):
         if message_group != None:
             syncer_names = message_group.split()
         else:
-            bot.say(WHAT_DOING_MESSAGE)
-            return
+            return bot.say(WHAT_DOING_MESSAGE)
 
         user_list = channel_user_list(bot, trigger)
 
         is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
 
         if not is_user_in_syncer_list:
-            bot.say(INCLUDE_SELF_MESSAGE)
-            return
+            return bot.say(INCLUDE_SELF_MESSAGE)
 
         new_sync = Sync(syncer_names, bot, user_list)
         _current_sync = new_sync
@@ -297,9 +294,8 @@ def resync(bot,trigger):
 
             is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
             if not is_user_in_syncer_list:
-                bot.say(NOT_IN_PREV_SYNC_MESSAGE)
                 _current_sync = None
-                return
+                return bot.say(NOT_IN_PREV_SYNC_MESSAGE)
 
             _current_sync.__init__(_previous_sync.syncer_names, bot, user_list)
         else:
