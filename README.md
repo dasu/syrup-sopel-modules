@@ -4,8 +4,6 @@ Used to be called syrup-willie-modules
 Python 3.3
 
 ###Modules descriptions:  
-#####8ball.py  
-Not sure why I have this, it's in sopel-extras...
 #####anime.py
 Checks releases of animes on specified day. Based off https://github.com/infinitylabs/uguubot/blob/master/plugins/anime.py
 #####animerss.py
