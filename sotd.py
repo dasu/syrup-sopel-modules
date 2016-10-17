@@ -55,7 +55,7 @@ def fetch_yt_video_info(bot,id):
         'dislikes': video['statistics'].get('dislikeCount') or '0',
         'link': 'https://youtu.be/' + video['id']
     }
-    bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+    '''bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
     ydl_opts = {
         'format': 'bestaudio/best',
         'prefer_ffmpeg': True,
@@ -66,6 +66,8 @@ def fetch_yt_video_info(bot,id):
         x = ydl.download(['http://www.youtube.com/watch?v={}'.format(id)])
     os.chdir('/path/to/songs/folder/')
     subprocess.call(['ffmpeg','-y','-i','{}.webm'.format(bksongname),'{}.mp3'.format(bksongname)],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    '''
+    bksongname = ""
     return info, bksongname
     
     
@@ -118,11 +120,11 @@ def sotd(bot, trigger):
             if(domain.netloc == 'youtu.be' or domain.netloc == 'www.youtu.be'):
                 yt,bksongname = fetch_yt_video_info(bot, domain.path[1:])
                 song = yt['title']
-                bksongname=bksongname+".mp3"
+                #bksongname=bksongname+".mp3"
             elif(domain.netloc == 'youtube.com' or domain.netloc == 'www.youtube.com'):
                 yt,bksongname = fetch_yt_video_info(bot, domain.query[2:])
                 song = yt['title']
-                bksongname=bksongname+".mp3"
+                #bksongname=bksongname+".mp3"
             elif(domain.netloc == 'soundcloud.com' or domain.netloc == 'www.soundcloud.com'):
                 song,bksongname = soundcloudinfo(link)
             elif(domain.netloc == 'i.sc0tt.net'):
