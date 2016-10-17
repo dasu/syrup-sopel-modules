@@ -3,9 +3,9 @@
 #from urllib.request import urlopen
 import requests
 import json
-import willie
+import sopel
 
-@willie.module.commands('mtg','magic')
+@sopel.module.commands('mtg','magic')
 def mtg(bot,trigger):
     if not trigger.group(2):
         return bot.say("Please enter a card name.")
