@@ -50,6 +50,8 @@ Outputs information on soundcloud urls when they're posted to the channel.  Requ
 Outputs the dow jones index average, or search your own favourite stocks!  Info comes from finance.google.com, and has a 15 minute stocks delay.
 #####sync.py
 Sync module to start a countdown to sync chinese cartoons with your irc friends.  Written by https://github.com/agricola
+#####traffic.py
+Traffic/duration to location module that works off the .setlocation set for user.  it's not really well done.  requires google api (distance matrix) 
 #####twitch.py
 Module for getting info on a twitch/hitbox(and a specific user on youtube streaming) channel assuming they are currently streaming, as well as setting up a notification announcement for set twitch/hitbox users when they start streaming. Gives info on twitch users when a twitch url is posted.  Requires hitbox, twitch, youtube API keys.  By default it checks every ten seconds for streaming status of specified users, this adds up!  25920 url calls or more a day.  Twitch API is slow, don't expect instant announcements (sometimes 1m lag time on api), hitbox is p. good and quick.  There are slight issues with it, may randomly not work, and it requires probably a complete rewrite. :|  Now requires Client-ID from twitch: https://www.twitch.tv/settings/connections
 #####urbandict.py
