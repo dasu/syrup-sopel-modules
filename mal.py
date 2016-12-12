@@ -21,7 +21,7 @@ def shutdown(bot):
 def malirc(bot, trigger, match=None):
     match = match or trigger
     id = match.group(2)
-    url = 'http://myanimelist.net/includes/ajax.inc.php?t=64&id={}-id'.format(id)
+    url = 'https://myanimelist.net/includes/ajax.inc.php?t=64&id={}-id'.format(id)
     bs, x = connect(url)
     if bs.text == 'No such series found.':
         return
@@ -39,7 +39,7 @@ def malirc(bot, trigger, match=None):
     bot.say("{0} [{1}] - Type: {2} Eps: {3} Genres: {4} Status: {5}".format(name,year,type,episodes,genres,status))
     
 def connect(url):
-    headers = {'User-Agent':'API_KEY_GOES_HERE','Authorization':'AUTH_KEY_GOES_HERE'}
+    headers = {'Authorization':'BASE64ENCODED USERNAME:PASSWORD GOES HERE'}
     x = requests.get(url,headers=headers).content
     bs = BeautifulSoup(x)
     return (bs, x)
@@ -50,7 +50,7 @@ def mal(bot,trigger):
         return bot.say("Enter an anime name you weeaboo.")
     i = trigger.group(2)
     if len(i)>1 and len(trigger.group())>5:
-        d = 'http://myanimelist.net/api/anime/search.xml?q={0}'.format(i)
+        d = 'https://myanimelist.net/api/anime/search.xml?q={0}'.format(i)
         bs, x = connect(d)
         if len(x) > 14:
             if bs.find('type').string == 'Movie':
