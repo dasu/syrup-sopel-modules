@@ -73,9 +73,3 @@ def fifty(bot, trigger):
 def rather(bot, trigger):
   header =  {"User-Agent": "Boredbot/1.0 by sc00ty"}
   bot.say(choice(requests.get("http://www.reddit.com/r/wouldyourather.json?limit=100", headers=header).json()["data"]["children"])["data"]["title"])
-
-
-@sopel.module.commands('mirror', 'h', 'h1x0')
-def mirror(bot, trigger):
-  if trigger.group(2):
-    bot.say("http://m.h1x0.net/%s" % trigger.group(2))
