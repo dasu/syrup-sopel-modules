@@ -72,7 +72,7 @@ def gdq(bot, trigger):
         if tts.days <= 3:
             return bot.say("GDQ is {0}H{1}M away.  First game: {2} by {3} ETA: {4} Comment: {5} | https://gamesdonequick.com/schedule".format(int(tts.total_seconds() // 3600),int((tts.total_seconds() % 3600) // 60), nextgame, nextrunner, $
         else:
-            return bot.say("GDQ is {0} days away ({1}) | https://gamesdonequick.com/schedule".format(tts.days+round((tts.seconds/86400),2),gdqstart.strftime('%m/%d/%Y')))
+            return bot.say("GDQ is {0} days away ({1}) | https://gamesdonequick.com/schedule".format(tts.days,gdqstart.strftime('%m/%d/%Y')))
 
     if nextgame == 'done':
         return bot.say("GDQ is {0} days away ({1} [estimated])".format(delta.days+round((delta.seconds/86400),2),textdate))
