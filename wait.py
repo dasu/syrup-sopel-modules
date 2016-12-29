@@ -59,6 +59,12 @@ def wait(bot,trigger):
             if req.json()['docs']:
                 animu_eng = req.json()['docs'][0]['title_english']
                 animu_rom = req.json()['docs'][0]['title_romaji']
+                animu_title = req.json()['docs'][0]['title']
+                if animu_title == animu_eng:
+                    season = req.json()['docs'][0]['season']
+                    req2 = requests.get("https://whatanime.ga/info?season={}&anime={}".format(season,animu_title))
+                    animu_eng = req2.json()[0]['title_english']
+                    animu_rom = req2.json()[0]['title_romaji']
                 accuracy = round(100 - req.json()['docs'][0]['diff'],2)
                 episode = req.json()['docs'][0]['episode']
                 return bot.say("{} [{}] Episode:{} Confidence: {}% | https://whatanime.ga/?url={}".format(animu_eng, animu_rom, episode, accuracy, imageurl))
