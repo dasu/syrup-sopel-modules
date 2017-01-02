@@ -64,7 +64,3 @@ def hots(bot, trigger):
   url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(i)
   line = hotsSearch(url)
   bot.say(line)
-    
-    
-    
-    
