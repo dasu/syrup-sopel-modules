@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import sopel
-import sys
 
 #github.com/afengg
 # module that parses hotslogs.com for a specified hero's most popular talent of each tier and outputs a talent build
@@ -36,9 +35,8 @@ def hotsSearch(url):
   #append last talent, since there is no 'Level: ' or '\xa0' after the final talent to trigger the append       
   full_talents.append(talent)
 
-  # After appending all of the talents from the table, remove the head of the full_talents list twice
+  # After appending all of the talents from the table, remove the head of the full_talents list once
   # to remove unnecessary elements
-  full_talents.pop(0)
   full_talents.pop(0)
   # set some initial values
   prev_level = '1';
