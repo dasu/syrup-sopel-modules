@@ -25,13 +25,13 @@ def hotsSearch(url):
   talent = []
 
   for row in table_data:
-      if 'Level: ' in row.text or '\xa0' in row.text:
-        if talent:
-          full_talents.append(talent)
-          talent = []
+    if 'Level: ' in row.text or '\xa0' in row.text:
+      if talent:
+        full_talents.append(talent)
+        talent = []
       
-      else:
-        talent.append(row.text)
+    else:
+      talent.append(row.text)
   #append last talent, since there is no 'Level: ' or '\xa0' after the final talent to trigger the append       
   full_talents.append(talent)
 
@@ -39,15 +39,16 @@ def hotsSearch(url):
   # to remove unnecessary elements
   full_talents.pop(0)
   # set some initial values
-  prev_level = '1';
+  prev_level = '1'
   max_talent = full_talents[0]
   for talent in full_talents:
     # if we are still within the same talent tier
-    if talent[0] == prev_level:
+    if talent:
+      if talent[0] == prev_level:
         if comparePercentages(talent[5], max_talent[5]) > 0:
           max_talent = talent 
         prev_level = talent[0]
-    else:
+      else:
         desired_talents.append(max_talent[2])
         max_talent = talent
         prev_level = talent[0]
