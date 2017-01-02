@@ -27,8 +27,9 @@ def hotsSearch(url):
 
   for row in table_data:
       if 'Level: ' in row.text or '\xa0' in row.text:
-        full_talents.append(talent)
-        talent = []
+        if talent:
+          full_talents.append(talent)
+          talent = []
       
       else:
         talent.append(row.text)
@@ -48,7 +49,7 @@ def hotsSearch(url):
         if comparePercentages(talent[5], max_talent[5]) > 0:
           max_talent = talent 
         prev_level = talent[0]
-      else:
+    else:
         desired_talents.append(max_talent[2])
         max_talent = talent
         prev_level = talent[0]
