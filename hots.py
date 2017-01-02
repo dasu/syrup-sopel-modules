@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import sopel
-import sys
 
 #github.com/afengg
 # module that parses hotslogs.com for a specified hero's most popular talent of each tier and outputs a talent build
@@ -27,17 +26,17 @@ def hotsSearch(url):
 
   for row in table_data:
       if 'Level: ' in row.text or '\xa0' in row.text:
-        full_talents.append(talent)
-        talent = []
+        if talent:
+          full_talents.append(talent)
+          talent = []
       
       else:
         talent.append(row.text)
   #append last talent, since there is no 'Level: ' or '\xa0' after the final talent to trigger the append       
   full_talents.append(talent)
 
-  # After appending all of the talents from the table, remove the head of the full_talents list twice
+  # After appending all of the talents from the table, remove the head of the full_talents list once
   # to remove unnecessary elements
-  full_talents.pop(0)
   full_talents.pop(0)
   # set some initial values
   prev_level = '1';
@@ -48,7 +47,7 @@ def hotsSearch(url):
         if comparePercentages(talent[5], max_talent[5]) > 0:
           max_talent = talent 
         prev_level = talent[0]
-      else:
+    else:
         desired_talents.append(max_talent[2])
         max_talent = talent
         prev_level = talent[0]
@@ -65,7 +64,3 @@ def hots(bot, trigger):
   url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(i)
   line = hotsSearch(url)
   bot.say(line)
-    
-    
-    
-    
