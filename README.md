@@ -26,8 +26,8 @@ Gelbooru module.  search for lewd or safe images of 'You're Waifu'.  also gives 
 Not sure what I even use from here, maybe the reddit shit.  Taken from sc0tt.
 #####hltb.py
 'How long to beat' module.  Outputs how long it would take to beat a video game.  
-#####isdeadyet.py
-A simple module made for a certain retard that checks if a certain presidential candidate is dead yet regularly.  Many laughs will be had when they win.
+#####hots.py
+Guest module by afengg, some heroes of the storm module that does...something... give best skills by popularity? IDK, I only play good games.
 #####mal.py
 Anime module to check myanimelist for show info, can also check for manga, VAs, characters, etc.  gives stats on animu if a mal url is posted.  Requires whitelisted MAL api user-agent key, and base 64 encoded username:password 
 #####mtg.py
