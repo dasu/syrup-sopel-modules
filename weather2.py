@@ -153,8 +153,10 @@ def get_forecast(bot,trigger,location=None):
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            return bot.msg(trigger.sender, "I don't know where you live. " +
+            bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+            error = 'yes'
+            return location, forecast, error
         body = reversewoeid_search(woeid)
         result = body.json()['query']['results']['place']
         longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
