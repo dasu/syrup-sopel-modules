@@ -153,10 +153,8 @@ def get_forecast(bot,trigger,location=None):
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
-            bot.msg(trigger.sender, "I don't know where you live. " +
+            return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
-            error = 'yes'
-            return location, forecast, error
         body = reversewoeid_search(woeid)
         result = body.json()['query']['results']['place']
         longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
@@ -177,7 +175,7 @@ def get_forecast(bot,trigger,location=None):
         bot.reply("I don't know where that is.")
         error = 'yes'
         return location,forecast, error
-    forecast = requests.get('https://api.forecast.io/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
     if body:
         result = body.json()['query']['results']['place']
         if result['locality1']:
