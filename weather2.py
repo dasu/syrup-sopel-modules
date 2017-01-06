@@ -3,16 +3,17 @@
 # Copyright 2012, Elsie Powell, embolalia.com
 # Licensed under the Eiffel Forum License 2.
 # A modification of sopel's weather.py after it was broken by yahoo's requirement for oauth authentication 
-# This module requires api keys for forecast.io and google url shortener
+# This module requires api keys for darksky.net and google url shortener
 # This can be cleaned up a lot and made more efficient.
 from __future__ import unicode_literals, absolute_import, print_function, division
 import requests
 import json
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
-import datetime
+from datetime import datetime
+from pytz import timezone
 
-forecastapi = '' #forecast.io API key.
+forecastapi = '' #darksky.net API key.
 gurlapi = '' #google url shortner api key
 
 def get_short_url(gurl):
@@ -46,14 +47,21 @@ def reversewoeid_search(query):
 def get_temp(forecast):
     try:
         temp = round(forecast.json()['currently']['temperature'])
+        app_temp = round(forecast.json()['currently']['apparentTemperature'])
     except (KeyError, ValueError):
         return 'unknown'
     high = round(forecast.json()['daily']['data'][0]['temperatureMax'])
     low = round(forecast.json()['daily']['data'][0]['temperatureMin'])
     if forecast.json()['flags']['units'] == 'us':
-        return (u'%d\u00B0F (H:%d|L:%d)' % (temp, high, low))
+        if temp == app_temp:
+            return (u'%d\u00B0F (H:%d|L:%d)' % (temp, high, low))
+        else:
+            return (u'%d\u00B0F, (App:%d, H:%d|L:%d)' % (temp, app_temp, high, low))
     else:
-        return (u'%d\u00B0C (H:%d|L:%d)' % (temp, high, low))
+        if temp == app_temp:
+            return (u'%d\u00B0C (H:%d|L:%d)' % (temp, high, low))
+        else:
+            return (u'%d\u00B0C, (App:%d, H:%d|L:%d)' % (temp, app_temp, high, low))
     
 def get_wind(forecast):
     try:
@@ -169,7 +177,7 @@ def get_forecast(bot,trigger,location=None):
         bot.reply("I don't know where that is.")
         error = 'yes'
         return location,forecast, error
-    forecast = requests.get('https://api.forecast.io/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
     if body:
         result = body.json()['query']['results']['place']
         if result['locality1']:
@@ -197,6 +205,13 @@ def get_forecast(bot,trigger,location=None):
             else:
                 location = result['name']
     return location, forecast, error
+    
+def get_sun(tz, forecast):
+    if 'sunriseTime' not in forecast:
+      return ""
+    sunrise = datetime.fromtimestamp(forecast['sunriseTime'], tz=timezone(tz)).strftime('%H:%M')
+    sunset = datetime.fromtimestamp(forecast['sunsetTime'], tz=timezone(tz)).strftime('%H:%M')
+    return ", \u2600 \u2191 " + sunrise + " \u2193 " + sunset
 
 @commands('weather7', 'wea7')
 @example('.weather7 London')
@@ -212,7 +227,7 @@ def weather7(bot,trigger):
     sevendays = []
     weekdays = {1:'M',2:'Tu',3:'W',4:'Th',5:'F',6:'Sa',7:'Su'}
     for day in forecast.json()['daily']['data']:
-        wkday = weekdays[datetime.datetime.fromtimestamp(int(day['time'])).isoweekday()]
+        wkday = weekdays[datetime.fromtimestamp(int(day['time'])).isoweekday()]
         maxtemp = round(day['temperatureMax'])
         mintemp = round(day['temperatureMin'])
         sevendays.append("{0}:({1}|{2})".format(wkday,mintemp,maxtemp))
@@ -236,7 +251,8 @@ def weather(bot, trigger):
     humidity = forecast.json()['currently']['humidity']
     wind = get_wind(forecast)
     alert = get_alert(forecast)
-    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s' % (location, summary, temp, round(humidity*100), wind, alert))
+    sun = get_sun(forecast.json()['timezone'], forecast.json()['daily']['data'][0])
+    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s %s' % (location, summary, temp, round(humidity*100), wind, sun, alert))
 
 @commands('setlocation', 'setwoeid')
 @example('.setlocation Columbus, OH')
