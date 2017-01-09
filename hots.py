@@ -43,7 +43,7 @@ def hotsSearch(url):
   max_talent = full_talents[0]
   for talent in full_talents:
     # if we are still within the same talent tier
-    if talent:
+    if talent and len(talent) > 2:
       if talent[0] == prev_level:
         if comparePercentages(talent[5], max_talent[5]) > 0:
           max_talent = talent 
@@ -60,8 +60,16 @@ def hotsSearch(url):
 def hots(bot, trigger):
   if not trigger.group(2):
     return bot.say("Enter a HotS character.")
-  i = trigger.group(2)
-  
-  url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(i)
+  s = ''.join(e for e in trigger.group(2).lower() if e.isalnum())
+  r = requests.get('https://www.hotslogs.com/API/Data/Heroes')
+  heroes_json = r.json()
+  search_term = None
+  for hero in heroes_json:
+    if ''.join(e for e in hero["PrimaryName"].lower() if e.isalnum()) == s:
+        search_term = hero["PrimaryName"]
+        break
+  if not search_term:
+    return bot.say("Enter a HotS character.")
+  url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(search_term)
   line = hotsSearch(url)
   bot.say(line)
