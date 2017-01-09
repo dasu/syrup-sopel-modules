@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import sopel
+import json
 
 #github.com/afengg
 # module that parses hotslogs.com for a specified hero's most popular talent of each tier and outputs a talent build
@@ -42,15 +43,16 @@ def hotsSearch(url):
   prev_level = '1';
   max_talent = full_talents[0]
   for talent in full_talents:
+    if talent and len(talent) > 2:
     # if we are still within the same talent tier
-    if talent[0] == prev_level:
-        if comparePercentages(talent[5], max_talent[5]) > 0:
-          max_talent = talent 
-        prev_level = talent[0]
-    else:
-        desired_talents.append(max_talent[2])
-        max_talent = talent
-        prev_level = talent[0]
+        if talent[0] == prev_level:
+            if comparePercentages(talent[5], max_talent[5]) > 0:
+              max_talent = talent 
+            prev_level = talent[0]
+        else:
+            desired_talents.append(max_talent[2])
+            max_talent = talent
+            prev_level = talent[0]
   #append last talent
   desired_talents.append(max_talent[2])      
   return ' > '.join(desired_talents)
@@ -59,8 +61,16 @@ def hotsSearch(url):
 def hots(bot, trigger):
   if not trigger.group(2):
     return bot.say("Enter a HotS character.")
-  i = trigger.group(2)
-  
-  url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(i)
+  s = ''.join(e for e in trigger.group(2).lower() if e.isalnum())
+  r = requests.get('https://www.hotslogs.com/API/Data/Heroes')
+  heroes_json = r.json()
+  search_term = None
+  for hero in heroes_json:
+    if ''.join(e for e in hero["PrimaryName"].lower() if e.isalnum()) == s:
+        search_term = hero["PrimaryName"]
+        break
+  if not search_term:
+    return bot.say("Enter a HotS character.")
+  url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(search_term)
   line = hotsSearch(url)
   bot.say(line)
