@@ -40,6 +40,8 @@ Pushbullet module.  At work and someone posted a link to something interesting, 
 Pixiv module to search pixiv (jp and en) images.  Warning, this has a higher memory/cpu usage compared to other modules.
 #####remind.py
 A modified remind.py (from sopel's own plugins).  defaults to minutes when entering a number, does not require a message.  Adds a 'LP' unit of time, which is 6 minutes, for love live school idol festival players. 
+#####shadowverse.py
+Get info about cards from some random waifu card fighting game. created by @agricola 
 #####smug.py
 Outputs a random smug anime image out of 71 choices.
 #####sotd.py
