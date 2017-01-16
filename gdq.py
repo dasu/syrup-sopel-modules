@@ -46,27 +46,26 @@ def getinfo(run,now):
 def gdq(bot, trigger):
     now = datetime.utcnow()
     now = now.replace(tzinfo=timezone.utc)
-    delta = datetime(2017,1,8,16,30,tzinfo=timezone.utc) - now
-    textdate = "Jan 8"
+    delta = datetime(2017,7,,16,30,tzinfo=timezone.utc) - now
+    textdate = "July 2"
     url = 'https://gamesdonequick.com/schedule'
-    #req = urllib.request.Request(url,data=None,headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
     try:
         x = requests.get(url).content
     except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2),textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
     bs = BeautifulSoup(x)
     try:
         run = bs.find("table",{"id":"runTable"}).tbody
     except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2), textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days, textdate))
     try:
         gdqstart = datetime.strptime(run.td.getText(), '%Y-%m-%dT%H:%M:%SZ')
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
     except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2), textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days,2), textdate))
     (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
     if not nextgame:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days+round((delta.seconds/86400),2),textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
     if now < gdqstart:
         tts = gdqstart - now
         if tts.days <= 3:
@@ -75,7 +74,7 @@ def gdq(bot, trigger):
             return bot.say("GDQ is {0} days away ({1}) | https://gamesdonequick.com/schedule".format(tts.days,gdqstart.strftime('%m/%d/%Y')))
 
     if nextgame == 'done':
-        return bot.say("GDQ is {0} days away ({1} [estimated])".format(delta.days+round((delta.seconds/86400),2),textdate))
+        return bot.say("GDQ is {0} days away ({1} [estimated])".format(delta.days,textdate))
     if game:
         if comment:
             bot.say("Current Game: {0} by {1} ETA: {2} Comment: {3} | Next Game: {4} by {5} | http://www.twitch.tv/gamesdonequick | https://gamesdonequick.com/schedule".format(game, runner, eta, comment, nextgame, nextrunner))
