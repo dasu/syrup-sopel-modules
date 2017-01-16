@@ -65,7 +65,7 @@ def hots(bot, trigger):
   heroes_json = r.json()
   search_term = None
   for hero in heroes_json:
-    if s.lower() in hero["PrimaryName"].lower():
+    if s.lower() in ''.join(e for e in hero["PrimaryName"].lower() if e.isalnum()):
         search_term = hero["PrimaryName"]
         break
   if not search_term:
