@@ -7,7 +7,7 @@ import sopel
 import re
 from sopel.tools import SopelMemory
 
-vndbregex = re.compile('.*(https?:\/\/vndb.org\/v(.*?((?=[\s])|$)))')
+vndbregex = re.compile('.*(https?:\/\/vndb.org\/v(\d{1,}.*?((?=[\s])|$)))')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -85,7 +85,8 @@ def vndb(bot, trigger):
         else:
             return bot.say("No results.")
     sock.close()
-    
+
+@sopel.module.rule('.*(https?:\/\/vndb.org\/v(\d{1,}.*?((?=[\s])|$)))')
 def vndbirc(bot, trigger, match = None):
 match = match or trigger
 request = "get vn basic,details,stats,tags (id = {0})\x04".format(match.group(2))
