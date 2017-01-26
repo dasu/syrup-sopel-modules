@@ -217,7 +217,7 @@ def allstreamer_status(bot, trigger):
 @sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:www\.)?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 def twitchirc(bot, trigger, match = None):
   match = match or trigger
-  streamer_name = match.group(0)
+  streamer_name = match.group(1)
   query = streamers if streamer_name is None else streamer_name.split(" ")
   streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(query)}, headers={"Client-ID":twitchclientid}).json()
   results = []
