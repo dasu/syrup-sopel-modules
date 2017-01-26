@@ -62,7 +62,7 @@ def gdq(bot, trigger):
         gdqstart = datetime.strptime(run.td.getText(), '%Y-%m-%dT%H:%M:%SZ')
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
     except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days,2), textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days, textdate))
     (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
     if not nextgame:
         return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
