@@ -65,9 +65,12 @@ def hots(bot, trigger):
   heroes_json = r.json()
   search_term = None
   for hero in heroes_json:
-    if s.lower() in ''.join(e for e in hero["PrimaryName"].lower() if e.isalnum()):
+    stripped_name = ''.join(e for e in hero["PrimaryName"].lower() if e.isalnum())
+    if stripped_name.startswith(s):
         search_term = hero["PrimaryName"]
         break
+    elif s in stripped_name:
+      search_term = hero["PrimaryName"]
   if not search_term:
     return bot.say("Enter a HotS character.")
   url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(search_term)
