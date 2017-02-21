@@ -5,6 +5,7 @@ from PIL import Image
 from io import BytesIO
 
 expire = 0
+token = '' #api token for whatanime.ga, instruction to get one: https://soruly.github.io/whatanime.ga/ 
 
 def check_image(imgurl):
     try:
@@ -19,39 +20,27 @@ def check_image(imgurl):
 @sopel.module.commands('wait')
 def wait(bot,trigger):
     global expire
+    global token
     if not trigger.group(2):
         return bot.say("Provide an animu screenshot")
     imageurl = trigger.group(2)
     if not check_image(imageurl):
         return bot.say("Doesn't seem to be an image type.  Direct image links only.")
     imgdata = requests.get(imageurl)
-    if int(imgdata.headers['Content-Length']) >= 819200:
+    if int(imgdata.headers['Content-Length']) >= 999999:
         img = Image.open(BytesIO(imgdata.content))
         img.save("/tmp/temp.jpg")
         with open("/tmp/temp.jpg", "rb") as img_tmp:
             b64 = base64.b64encode(img_tmp.read())
-            img_tmp.seek(0)
-            length = len(img_tmp.read())
     else:
         b64 = base64.b64encode(imgdata.content)
-        length = imgdata.headers['Content-Length']
-    data = {'data':b64}
-    baseurl = 'https://whatanime.ga/search'
-    headers ={
-    "accept":"application/json, text/javascript, */*; q=0.01",
-    "accept-encoding":"gzip, deflate, br",
-    "accept-language":"en-US,en;q=0.8",
-    "content-length": length,
-    "content-type":"application/x-www-form-urlencoded; charset=UTF-8",
-    "origin":"https://whatanime.ga",
-    "referer":"https://whatanime.ga/?url={0}".format(imageurl),
-    "user-agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36",
-    "x-requested-with":"XMLHttpRequest"
-    }
+    data = {'image':b64}
+    baseurl = 'https://whatanime.ga/api/search?token={}'.format(token)
+    headers ={"content-type":"application/x-www-form-urlencoded; charset=UTF-8"}
     try:
         req = requests.post(baseurl, data=data, headers=headers)
     except:
-        return bot.say("Website may be down")
+        return bot.say("Whatanime.ga may be down")
     if req.ok:
         try:
             if req.json()['quota'] == 0:
@@ -60,12 +49,12 @@ def wait(bot,trigger):
                 animu_eng = req.json()['docs'][0]['title_english']
                 animu_rom = req.json()['docs'][0]['title_romaji']
                 animu_title = req.json()['docs'][0]['title']
-                if animu_title == animu_eng:
+                if animu_title == animu_eng: 
                     season = req.json()['docs'][0]['season']
                     req2 = requests.get("https://whatanime.ga/info?season={}&anime={}".format(season,animu_title))
                     animu_eng = req2.json()[0]['title_english']
                     animu_rom = req2.json()[0]['title_romaji']
-                accuracy = round(100 - req.json()['docs'][0]['diff'],2)
+                accuracy = round(req.json()['docs'][0]['similarity'] * 100,2)
                 episode = req.json()['docs'][0]['episode']
                 return bot.say("{} [{}] Episode:{} Confidence: {}% | https://whatanime.ga/?url={}".format(animu_eng, animu_rom, episode, accuracy, imageurl))
             else:
@@ -76,7 +65,7 @@ def wait(bot,trigger):
         return bot.say("File too large, try a smaller file. (<1MB?)")
     elif req.status_code == 429:
         if expire:
-            return bot.say("Quota reached, wait {} minutes, or check https://whatanime.ga/?url={0}".format(round(expire/60,2),imageurl))
+            return bot.say("Quota reached, wait {} seconds, or check https://whatanime.ga/?url={0}".format(expire,imageurl))
         else:
             return bot.say("Quota reached... Check https://whatanime.ga/?url={0}".format(imageurl))
     else:
