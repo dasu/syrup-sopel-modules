@@ -138,14 +138,17 @@ def get_wind(forecast):
 
 def get_alert(forecast):
     try:
+        fullalerts = []
         if forecast.json()['alerts'][0]:
-            title = forecast.json()['alerts'][0]['title']
-            alert = get_short_url(forecast.json()['alerts'][0]['uri'])
-            return 'Alert: ' + title + ' ' + alert
+            for alerts in forecast.json()['alerts']:
+                title = alerts['title']
+                alert = get_short_url(alerts['uri'])
+                fullalerts.append("{} {}".format(title,alert))
+            return 'Alert: {}'.format(", ".join(fullalerts))
         else:
             return ''
     except:
-        return ''        
+        return ''
 
 def get_forecast(bot,trigger,location=None):
     global forecastapi
