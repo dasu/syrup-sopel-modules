@@ -122,11 +122,12 @@ def wafflebot_talk(bot, trigger):
       fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
-      while any(word in fullresp.lower().split() for word in nicklist):
-        fullresp = fullmodel.make_short_sentence(140,
-          max_overlap_total=MAX_OVERLAP_TOTAL,
-          max_overlap_ratio=MAX_OVERLAP_RATIO)
-      bot.say(fullresp)
+      if fullresp:
+        while any(word in fullresp.lower().split() for word in nicklist):
+          fullresp = fullmodel.make_short_sentence(140,
+            max_overlap_total=MAX_OVERLAP_TOTAL,
+            max_overlap_ratio=MAX_OVERLAP_RATIO)
+        bot.say(fullresp)
 
 @sopel.module.commands('wbknows')
 def wafflebotknows(bot,trigger):
