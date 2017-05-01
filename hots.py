@@ -37,8 +37,7 @@ def hotsSearch(url):
 
   # After appending all of the talents from the table, remove the head of the full_talents list once
   # to remove unnecessary elements
-  #full_talents.pop(0)
-  del full_talents[0:4]
+  full_talents.pop(0)
   # set some initial values
   prev_level = '1'
   max_talent = full_talents[0]
