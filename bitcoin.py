@@ -6,6 +6,7 @@ import sopel
 lastPrice = 0
 lastLTCPrice = 0
 lastDogePrice = 0
+lastETHPrice = 0
 
 def calcdoge2usd(num):
    uri = "http://api.cryptocoincharts.info/tradingPair/doge_btc"
@@ -94,6 +95,17 @@ def calcusd2ltc(num):
    usdPerLtc = decimal.Decimal("1.0") / decimal.Decimal(data["ltc_usd"]["last"])
    return decimal.Decimal(num) * usdPerLtc
 
+def calceth2usd(num):
+   uri = "https://btc-e.com/api/3/ticker/eth_usd"
+   data = requests.get(uri).json()
+   return decimal.Decimal(num) * decimal.Decimal(data["eth_usd"]["last"])
+
+def calcusd2eth(num):
+   uri = "https://btc-e.com/api/3/ticker/eth_usd"
+   data = requests.get(uri).json()
+   usdPerEth = decimal.Decimal("1.0") / decimal.Decimal(data["eth_usd"]["last"])
+   return decimal.Decimal(num) * usdPerEth
+
    
 @sopel.module.commands('ltc')
 def litecoin(bot, trigger):
@@ -128,9 +140,44 @@ def usd2ltc(bot, trigger):
       usd = decimal.Decimal(arg)
       output = '$%s will get you Ł%.05f' % (usd, rate)
       bot.say(output)
+      
+@sopel.module.commands('eth')
+def ETH(bot, trigger):
+   global lastETHPrice
+   uri = "https://btc-e.com/api/3/ticker/eth_usd"
+   data = requests.get(uri).json()
+   diff = decimal.Decimal(data["eth_usd"]["last"]) - lastETHPrice
+   diffStr = ""
+   if diff != decimal.Decimal(0):
+      sign = "+" if diff > 0 else ''
+      diffStr = " (%s%0.5f)" % (sign, diff)
+   output = 'Current Price of Ξ1: $%0.5f%s' % (data["eth_usd"]["last"], diffStr)
+   lastETHPrice = decimal.Decimal(data["eth_usd"]["last"])
+   bot.say(output)
+
+@sopel.module.commands('eth2usd')
+def eth2usd(bot, trigger):
+   arg = trigger.group(2)
+   #If an argument is provided, convert the exchange rate
+   if arg:
+      rate = calceth2usd(arg)
+      usd = decimal.Decimal(arg)
+      output = 'Ξ%s will get you $%.05f' % (usd, rate)
+      bot.say(output)
+
+@sopel.module.commands('usd2eth')
+def usd2eth(bot, trigger):
+   arg = trigger.group(2)
+   #If an argument is provided, convert the exchange rate
+   if arg:
+      rate = calcusd2eth(arg)
+      usd = decimal.Decimal(arg)
+      output = '$%s will get you Ξ%.05f' % (usd, rate)
+      bot.say(output)
 
 @sopel.module.commands('ticker','tick')
 def ticker(bot, trigger):
    bitcoin(bot, trigger)
    litecoin(bot, trigger)
    dogecoin(bot, trigger)
+   ETH(bot,trigger)
