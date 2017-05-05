@@ -37,7 +37,7 @@ def hotsSearch(url):
 
   # After appending all of the talents from the table, remove the head of the full_talents list once
   # to remove unnecessary elements
-  full_talents.pop(0)
+  full_talents = [x for x in full_talents if len(x) > 4]
   # set some initial values
   prev_level = '1'
   max_talent = full_talents[0]
@@ -77,4 +77,4 @@ def hots(bot, trigger):
     return bot.say("Enter a HotS character.")
   url = 'http://www.hotslogs.com/Sitewide/HeroDetails?Hero={0}'.format(search_term)
   line = hotsSearch(url)
-  bot.say(line)
+  bot.say("{}: {}".format(search_term,line))
