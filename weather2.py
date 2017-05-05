@@ -8,7 +8,6 @@
 from __future__ import unicode_literals, absolute_import, print_function, division
 import requests
 import json
-from sopel import web
 from sopel.module import commands, example, NOLIMIT
 from datetime import datetime
 from pytz import timezone
@@ -62,7 +61,44 @@ def get_temp(forecast):
             return (u'%d\u00B0C (H:%d|L:%d)' % (temp, high, low))
         else:
             return (u'%d\u00B0C, (App:%d, H:%d|L:%d)' % (temp, app_temp, high, low))
-    
+
+def get_uv(postal):
+    try:
+        uvreq = requests.get("https://iaspub.epa.gov/enviro/efservice/getEnvirofactsUVHOURLY/ZIP/{}/JSON".format(postal)).json()
+    except:
+        return ""
+    now = datetime.now()
+    for i, item in enumerate(uvreq):
+        dt = datetime.strptime(item['DATE_TIME'],'%b/%d/%Y %I %p')
+        if dt > now:
+            uvindex = uvreq[i-1]['UV_VALUE']
+            break
+    if uvreq:
+        if uvindex <3:
+            color = "\x0303"
+        elif (uvindex >=3) and (uvindex < 6):
+            color = "\x0308"
+        elif (uvindex >=6) and (uvindex < 8):
+            color = "\x0307"
+        elif (uvindex >=8) and (uvindex < 11):
+            color = "\x0304"
+        else:
+            color = "\x0306"
+        max2 = max(uvreq,key=lambda uvreq: uvreq['UV_VALUE'])['UV_VALUE']
+        if max2 <3:
+            maxcolor = "\x0303"
+        elif (max2 >=3) and (max2 < 6):
+            maxcolor = "\x0308"
+        elif (max2 >=6) and (max2 < 8):
+            maxcolor = "\x0307"
+        elif (max2 >=8) and (max2 < 11):
+            maxcolor = "\x0304"
+        else:
+            maxcolor = "\x0306"
+        return ", UV:{}{}\x0F|{}{}\x0F".format(color,uvindex,maxcolor,max2)
+    else:
+        return ""
+
 def get_wind(forecast):
     try:
         if forecast.json()['flags']['units'] == 'us':
@@ -143,8 +179,8 @@ def get_alert(forecast):
             for alerts in forecast.json()['alerts']:
                 title = alerts['title']
                 alert = get_short_url(alerts['uri'])
-                fullalerts.append("{} {}".format(title,alert))
-            return 'Alert: {}'.format(", ".join(fullalerts))
+                fullalerts.append("{} {}".format(title, alert))
+            return ' | Alert: {}'.format(", ".join(fullalerts))
         else:
             return ''
     except:
@@ -152,14 +188,14 @@ def get_alert(forecast):
 
 def get_forecast(bot,trigger,location=None):
     global forecastapi
-    forecast,woeid,body,first_result,alert,result,error = '','','','','','',''
+    forecast,woeid,body,first_result,alert,result,postal,error = '','','','','','','',''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
         if not woeid:
             bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
             error = 'yes'
-            return location, forecast, error
+            return location, forecast, postal, error
         body = reversewoeid_search(woeid)
         result = body.json()['query']['results']['place']
         longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
@@ -179,7 +215,7 @@ def get_forecast(bot,trigger,location=None):
     if not woeid:
         bot.reply("I don't know where that is.")
         error = 'yes'
-        return location,forecast, error
+        return location,forecast, postal, error
     forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
     if body:
         result = body.json()['query']['results']['place']
@@ -187,6 +223,7 @@ def get_forecast(bot,trigger,location=None):
             location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
         else:
             location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
+        postal = result['postal']['content'] if result.get('postal') else None
     else:
         result = first_result.json()['query']['results']['place']
         if type(result) is list:
@@ -198,6 +235,7 @@ def get_forecast(bot,trigger,location=None):
                 location = result[0]['admin1']['content'] + ", " + result[0]['country']['content']
             else:
                 location = result[0]['name']
+            postal = result[0]['postal']['content'] if result[0].get('postal') else None
         else:
             if result['locality1']:
                 location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
@@ -207,23 +245,48 @@ def get_forecast(bot,trigger,location=None):
                 location = result['admin1']['content'] + ", " + result['country']['content']
             else:
                 location = result['name']
-    return location, forecast, error
-    
+            postal = result['postal']['content'] if result.get('postal') else None
+    return location, forecast, postal, error
+
 def get_sun(tz, forecast):
     if 'sunriseTime' not in forecast:
-      return ""
+        return ""
     sunrise = datetime.fromtimestamp(forecast['sunriseTime'], tz=timezone(tz)).strftime('%H:%M')
     sunset = datetime.fromtimestamp(forecast['sunsetTime'], tz=timezone(tz)).strftime('%H:%M')
     return ", \u2600 \u2191 " + sunrise + " \u2193 " + sunset
 
-@commands('weather7', 'wea7')
+def get_moon(forecast):
+    if 'moonPhase' not in forecast:
+        return ""
+    moonphase = forecast['moonPhase']
+    if moonphase == 0:
+        moon = "\U0001F311 | New Moon ({0:.0f}%)".format(moonphase * 100)
+    elif (moonphase > 0) and (moonphase <=0.24):
+        moon = "\U0001F312 | Waxing Crescent ({0:.0f}%)".format(moonphase * 100)
+    elif moonphase == 0.25:
+        moon = "\U0001F313 | First Quarter ({0:.0f}%)".format(moonphase * 100)
+    elif (moonphase >0.25) and (moonphase <=0.49):
+        moon = "\U0001F314 | Waxing Gibbous ({0:.0f}%)".format(moonphase * 100)
+    elif moonphase == 0.50:
+        moon = "\U0001F315 | Full Moon ({0:.0f}%)".format(moonphase * 100)
+    elif (moonphase >0.50) and (moonphase <=0.74):
+        moon = "\U0001F316 | Waning Gibbous ({0:.0f}%)".format(moonphase * 100)
+    elif moonphase == 0.75:
+        moon = "\U0001F317 | Last Quarter ({0:.0f}%)".format(moonphase * 100)
+    elif (moonphase >0.75) and (moonphase <=0.99):
+        moon = "\U0001F318 | Waning Crescent ({0:.0f}%)".format(moonphase * 100)
+    else:
+        return ""
+    return ", Moon: {}".format(moon)
+
+@commands('weather7', 'wea7', 'w7')
 @example('.weather7 London')
 def weather7(bot,trigger):
     location = trigger.group(2)
     if not location:
-        location, forecast, error = get_forecast(bot,trigger)
+        location, forecast, postal, error = get_forecast(bot,trigger)
     else:
-        location, forecast, error = get_forecast(bot,trigger,location)
+        location, forecast, postal, error = get_forecast(bot,trigger,location)
     if error:
         return
     summary = forecast.json()['daily']['summary']
@@ -238,15 +301,30 @@ def weather7(bot,trigger):
     sevendays = ", ".join(sevendays)
     bot.say("{0}: [{1}] {2}".format(location, summary, str(sevendays)))
 
-@commands('weather', 'wea')
+@commands('weather', 'wea', 'w')
 @example('.weather London')
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""
     location = trigger.group(2)
     if not location:
-        location, forecast, error = get_forecast(bot,trigger)
+        location, forecast, postal, error = get_forecast(bot,trigger)
     else:
-        location, forecast, error = get_forecast(bot,trigger,location)
+        location, forecast, postal, error = get_forecast(bot,trigger,location)
+    if error:
+        return
+    summary = forecast.json()['currently']['summary']
+    temp = get_temp(forecast)
+    alert = get_alert(forecast)
+    bot.say(u'%s: %s, %s %s' % (location, summary, temp,  alert))
+
+@commands('weatherfull','fullweather', 'wf')
+def weatherfull(bot, trigger):
+    """.weather location - Show the weather at the given location."""
+    location = trigger.group(2)
+    if not location:
+        location, forecast, postal, error = get_forecast(bot,trigger)
+    else:
+        location, forecast, postal, error = get_forecast(bot,trigger,location)
     if error:
         return
     summary = forecast.json()['currently']['summary']
@@ -254,8 +332,22 @@ def weather(bot, trigger):
     humidity = forecast.json()['currently']['humidity']
     wind = get_wind(forecast)
     alert = get_alert(forecast)
+    uv = get_uv(postal) if postal else ''
     sun = get_sun(forecast.json()['timezone'], forecast.json()['daily']['data'][0])
-    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s %s' % (location, summary, temp, round(humidity*100), wind, sun, alert))
+    bot.say(u'%s: %s, %s, Humidity: %s%%, %s%s%s%s' % (location, summary, temp, round(humidity*100), wind, sun, uv, alert))
+
+@commands('moon')
+def moon(bot,trigger):
+    location = trigger.group(2)
+    if not location:
+        location, forecast, postal, error = get_forecast(bot,trigger)
+    else:
+        location, forecast, postal, error = get_forecast(bot,trigger,location)
+    if error:
+        return
+    moon = get_moon(forecast.json()['daily']['data'][0])[1:]
+    bot.say(moon)
+    
 
 @commands('setlocation', 'setwoeid')
 @example('.setlocation Columbus, OH')
