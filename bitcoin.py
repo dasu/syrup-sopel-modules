@@ -64,7 +64,7 @@ def bitcoin(bot, trigger):
    bot.say(output)
 
    
-@willie.module.commands('btc2usd')
+@sopel.module.commands('btc2usd')
 def btc2usd(bot, trigger):
    arg = trigger.group(2)
    #If an argument is provided, convert the exchange rate
@@ -74,7 +74,7 @@ def btc2usd(bot, trigger):
       output = '฿%s will get you $%s' % (usd, rate)
       bot.say(output)
 
-@willie.module.commands('usd2btc')
+@sopel.module.commands('usd2btc')
 def usd2btc(bot, trigger):
    arg = trigger.group(2)
    #If an argument is provided, convert the exchange rate
