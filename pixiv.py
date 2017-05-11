@@ -1,5 +1,5 @@
 from pyvirtualdisplay import Display
-import willie
+import sopel
 from selenium import webdriver
 import urllib.request
 from urllib.request import urlopen
@@ -12,8 +12,8 @@ def setup(bot):
     bot.memory["pixbrowser"] = browser
 
 
-@willie.module.commands('pixiven','pixen')
-@willie.module.example('.pixiven word')
+@sopel.module.commands('pixiven','pixen')
+@sopel.module.example('.pixiven word')
 def pixiven(bot,trigger):
     #display = Display(visible=0, size=(1024,768))
     #display.start()
@@ -28,7 +28,7 @@ def pixiven(bot,trigger):
     bot.say("{0} results | {1}".format(results,truesearchlink))
     #bot.memory["pixbrowser"].close()
 
-@willie.module.commands('pixiv','pix')
+@sopel.module.commands('pixiv','pix')
 def pixiv(bot,trigger):
     url = "http://www.pixiv.net/search.php?word="+urllib.request.quote(trigger.group(2))
     x = urlopen(url).read()
