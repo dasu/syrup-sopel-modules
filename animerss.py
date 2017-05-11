@@ -1,12 +1,12 @@
 import feedparser
 import datetime
 import time
-import willie
+import sopel
 import urllib.request as urlrequest
 import json
 
 def get_short_url(gurl):
-    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDmplKOzdqkM_1hdZD-Y0KL8AkaiNlMEXA'
+    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key=API_KEY_GOES_HERE'
     long_url = json.dumps({'longUrl': gurl})
     request =  urlrequest.Request(short_url_service)
     request.add_header('Content-Type','application/json')
@@ -31,11 +31,11 @@ def parse(now):
         allnew = " | ".join(new)
         return allnew
         
-#@willie.module.commands('startrss','rssstart')
-@willie.module.event('JOIN')
-@willie.module.rule('.*')
+#@sopel.module.commands('startrss','rssstart')
+@sopel.module.event('JOIN')
+@sopel.module.rule('.*')
 def rss(bot, trigger):
-    if willie.tools.Identifier(trigger.sender) == "#pancakes" and trigger.nick == bot.nick:
+    if sopel.tools.Identifier(trigger.sender) == "#pancakes" and trigger.nick == bot.nick:
         time.sleep(5)
         bot.say("Starting RSS.")
         now = time.gmtime()
