@@ -1,4 +1,4 @@
-import willie
+import sopel
 import random
 
 smuglist = ['MZqGg95.png', 'h6mkYlW.jpg', 'LDhYNOS.png', 'tieHaeH.jpg', 'mfCYU45.jpg', 'kPhNAdN.png', 'zF32B7U.png',
@@ -13,10 +13,10 @@ smuglist = ['MZqGg95.png', 'h6mkYlW.jpg', 'LDhYNOS.png', 'tieHaeH.jpg', 'mfCYU45
             'A8ZPA9m.jpg', 'jgVXLuG.jpg', 'zfulnbC.jpg', 'wcfZJ0m.jpg', 'ysSF9DJ.jpg', 'vTEGZZv.jpg', 'lwkvwpA.jpg',
             'AaBqzfi.jpg']
 
-@willie.module.commands('smug')
+@sopel.module.commands('smug')
 def smug(bot,trigger):
         bot.say("https://i.imgur.com/%s" % random.choice(smuglist))
 
-@willie.module.commands('smugpoi')
+@sopel.module.commands('smugpoi')
 def smugpoi(bot,trigger):
         bot.say("https://i.imgur.com/%s poi" % random.choice(smuglist))
