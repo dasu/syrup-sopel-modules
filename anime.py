@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
 import time
-import willie
+import sopel
 
 def parse_dayname(i):
     days = {'sunday': 0,'monday': 1,'tuesday': 2,'wednesday': 3,'thursday': 4,'friday': 5,'saturday': 6}
@@ -40,7 +40,7 @@ def get_time_until(i):
     else:
         return ('{0} days {1}'.format(days_remaining, GetInHMS(seconds_remaining))).replace('1 days','1 day').replace('0 days ','')
 
-@willie.module.commands('release')
+@sopel.module.commands('release')
 def anime(bot, trigger):
     if not trigger.group(2):
         return bot.say("Enter Input can be: today, tomorrow, monday-sunday, or show name.")
