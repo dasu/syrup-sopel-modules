@@ -4,12 +4,12 @@ urbandict.py - urban dictionary module
 author: mutantmonkey <mutantmonkey@mutantmonkey.in>
 """
 
-import willie.web as web
+import sopel.web as web
 import json
-import willie
+import sopel
 
-@willie.module.commands('urb')
-@willie.module.example('.urb word')
+@sopel.module.commands('urb')
+@sopel.module.example('.urb word')
 def urbandict(bot, trigger):
     """.urb <word> - Search Urban Dictionary for a definition."""
 
