@@ -66,7 +66,7 @@ def get_uv(postal):
     try:
         uvreq = requests.get("https://iaspub.epa.gov/enviro/efservice/getEnvirofactsUVHOURLY/ZIP/{}/JSON".format(postal)).json()
     except:
-        return ""
+        return ''
     now = datetime.now()
     for i, item in enumerate(uvreq):
         dt = datetime.strptime(item['DATE_TIME'],'%b/%d/%Y %I %p')
@@ -97,7 +97,7 @@ def get_uv(postal):
             maxcolor = "\x0306"
         return ", UV:{}{}\x0F|{}{}\x0F".format(color,uvindex,maxcolor,max2)
     else:
-        return ""
+        return ''
 
 def get_wind(forecast):
     try:
@@ -223,7 +223,10 @@ def get_forecast(bot,trigger,location=None):
             location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
         else:
             location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-        postal = result['postal']['content'] if result.get('postal') else None
+        if result['country']['content'] == 'United States':
+            postal = result['postal']['content'] if result.get('postal') else None
+        else:
+            postal = None
     else:
         result = first_result.json()['query']['results']['place']
         if type(result) is list:
@@ -235,7 +238,10 @@ def get_forecast(bot,trigger,location=None):
                 location = result[0]['admin1']['content'] + ", " + result[0]['country']['content']
             else:
                 location = result[0]['name']
-            postal = result[0]['postal']['content'] if result[0].get('postal') else None
+            if result[0]['country']['content'] == 'United States':
+                postal = result[0]['postal']['content'] if result[0].get('postal') else None
+            else:
+                postal = None
         else:
             if result['locality1']:
                 location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
@@ -245,7 +251,10 @@ def get_forecast(bot,trigger,location=None):
                 location = result['admin1']['content'] + ", " + result['country']['content']
             else:
                 location = result['name']
-            postal = result['postal']['content'] if result.get('postal') else None
+            if result['country']['content'] == 'United States':
+                postal = result['postal']['content'] if result.get('postal') else None
+            else:
+                postal = None
     return location, forecast, postal, error
 
 def get_sun(tz, forecast):
