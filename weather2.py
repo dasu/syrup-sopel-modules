@@ -73,6 +73,8 @@ def get_uv(postal):
         if dt > now:
             uvindex = uvreq[i-1]['UV_VALUE']
             break
+    if 'uvindex' not in vars():
+        return  
     if uvreq:
         if uvindex <3:
             color = "\x0303"
