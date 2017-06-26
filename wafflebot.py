@@ -67,10 +67,12 @@ def wafflebot(bot, trigger):
   if llines > 1000:
     llines = 0
     nicklist = []
+    fullresp = []
     nicks = bot.channels[trigger.sender.lower()].users
     for nick in nicks:
       nicklist.append(nick)
-    fullresp = fullmodel.make_short_sentence(140,
+    while not fullresp:
+      fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
     while any(word in fullresp.lower().split() for word in nicklist):
@@ -103,10 +105,12 @@ def wafflebot_talk(bot, trigger):
     if nick:
       model = WaffleBotText("\n".join([r.decode('utf8') for r in results]), state_size=3)
       nicklist = []
+      resp = []
       nicks = bot.channels[trigger.sender.lower()].users
       for nick in nicks:
         nicklist.append(nick)
-      resp = model.make_short_sentence(140,
+      while not resp:
+        resp = model.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
       while any(word in resp.lower().split() for word in nicklist):
@@ -116,10 +120,12 @@ def wafflebot_talk(bot, trigger):
       bot.say(resp)
     else:
       nicklist = []
+      fullresp = []
       nicks = bot.channels[trigger.sender.lower()].users
       for nick in nicks:
         nicklist.append(nick)
-      fullresp = fullmodel.make_short_sentence(140,
+      while not fullresp:
+        fullresp = fullmodel.make_short_sentence(140,
           max_overlap_total=MAX_OVERLAP_TOTAL,
           max_overlap_ratio=MAX_OVERLAP_RATIO)
       if fullresp:
