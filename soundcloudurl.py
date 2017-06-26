@@ -3,7 +3,7 @@ from sopel.tools import SopelMemory
 import soundcloud
 import re
 
-scregex = re.compile('.*(https?:\/\/soundcloud.com\/.*?\/.*?((?=[\s])|$))')
+scregex = re.compile('.*(https?:\/\/soundcloud.com\/.*?\/(?!likes|tracks|albums|sets|reposts).*?((?=[\s])|$))')
 client_id = '' #soundcloud client ID
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -13,7 +13,7 @@ def setup(bot):
 def shutdown(bot):
     del bot.memory['url_callbacks'][scregex]
 
-@sopel.module.rule('.*(https?:\/\/soundcloud.com\/.*?\/.*?((?=[\s])|$))')
+@sopel.module.rule('.*(https?:\/\/soundcloud.com\/.*?\/(?!likes|tracks|albums|sets|reposts).*?((?=[\s])|$))')
 def soundcloudirc(bot, trigger, match=None):
     client = soundcloud.Client(client_id=client_id)
     match = match or trigger
@@ -31,7 +31,7 @@ def soundcloudirc(bot, trigger, match=None):
     if track.kind == 'track':
         plays = track.playback_count
         favorites = track.favoritings_count
-        bot.say(u"{0} - {1} [{2}] ►:{3} ❤:{4} Genre: {5}".format(artist,title,time,plays,favorites,genre))
+        bot.say(u"{0} - {1} [{2}] ►:{3} ❤:{4} {5}".format(artist,title,time,plays,favorites,"Genre: {}".format(genre) if track.genre else ""))
     if track.kind == 'playlist':
         track_count = track.track_count
-        bot.say(u"{0} - {1} [{2}] Tracks: {3} Genre: {4}".format(artist,title,time,track_count,genre))
+        bot.say(u"{0} - {1} [{2}] Tracks: {3} {4}".format(artist,title,time,track_count,"Genre: {}".format(genre) if track.genre else ""))
