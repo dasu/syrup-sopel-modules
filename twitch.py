@@ -16,7 +16,7 @@ streamers = [
 "chouxe",
 "kwlpp",
 "dasusp",
-"lurkk",
+"esicra",
 "agriks",
 "repppie",
 "squidgay",
@@ -25,7 +25,8 @@ streamers = [
 "kaask",
 "mole_star",
 "twoiis",
-"sasserr"
+"sasserr",
+"mogra" #untz untz
 ]
 
 hstreamers = [
@@ -65,14 +66,16 @@ def monitor_streamers(bot):
     for streamer in streaming["streams"]:
       streamer_name = streamer["channel"]["name"]
       streamer_game = streamer["channel"]["game"]
+      streamer_status = streamer["channel"]["status"]
       streamer_url = streamer["channel"]["url"]
       streamer_starttime = datetime.datetime.strptime(streamer['created_at'], '%Y-%m-%dT%H:%M:%SZ')
       streamer_viewers = streamer["viewers"]
     
       if streamer_name not in currently_streaming:
         currently_streaming[streamer_name] = streamer_game, {'cooldown': 0, 'starttime': streamer_starttime}
-        results.append("%s just went live playing %s! (%s - %s viewer%s)" % (streamer_name, 
+        results.append("%s just went live playing %s! [%s] (%s - %s viewer%s)" % (streamer_name, 
                                                                           streamer_game, 
+                                                                          streamer_status,
                                                                           streamer_url, 
                                                                           streamer_viewers, 
                                                                           "s" if streamer_viewers != 1 else ""))
@@ -93,11 +96,11 @@ def monitor_streamers(bot):
   hs = ",".join(hstreamers)
   try:
     testingtimeout = datetime.datetime.now()
-    hstreaming = requests.get('http://api.hitbox.tv/media/live/{0}'.format(hs),timeout=(1.5,1.5)).json()
+    hstreaming = requests.get('http://api.smashcast.tv/media/live/{0}'.format(hs),timeout=(1.5,1.5)).json()
   except requests.exceptions.ConnectionError:
     #return bot.msg(logchannel,"timeout time: {}".format((datetime.datetime.now() - testingtimeout).total_seconds()))
   except:
-    #return bot.msg(logchannel,"error with hitbox api")
+    #return bot.msg(logchannel,"error with smashcast api")
   hresults = []
   if hstreaming.get("livestream"):
     for hstreamer in hstreaming["livestream"]:
@@ -134,11 +137,13 @@ def streamer_status(bot, trigger):
     for streamer in streaming["streams"]:
       streamer_name = streamer["channel"]["name"]
       streamer_game = streamer["channel"]["game"]
+      streamer_status = streamer["channel"]["status"]
       streamer_url = streamer["channel"]["url"]
       streamer_viewers = streamer["viewers"]
     
-      results.append("%s is playing %s (%s - %s viewer%s)" % (streamer_name, 
+      results.append("%s is playing %s [%s] (%s - %s viewer%s)" % (streamer_name, 
                                                            streamer_game, 
+                                                           streamer_status,
                                                            streamer_url, 
                                                            streamer_viewers, 
                                                            "s" if streamer_viewers != 1 else "" ))
@@ -148,12 +153,12 @@ def streamer_status(bot, trigger):
     bot.say("Nobody is currently streaming.")
 
 
-@sopel.module.commands('hb','hitbox')
-@sopel.module.example('.hb  or .hb twitchusername')
+@sopel.module.commands('sc','smashcast')
+@sopel.module.example('.sc  or .sc twitchusername')
 def hstreamer_status(bot, trigger):
   hstreamer_name = trigger.group(2)
   query = ",".join(hstreamers) if hstreamer_name is None else hstreamer_name
-  hstreaming = requests.get('http://api.hitbox.tv/media/live/{0}'.format(query)).json()
+  hstreaming = requests.get('http://api.smashcast.tv/media/live/{0}'.format(query)).json()
   hresults = []
   for hstreamer in hstreaming["livestream"]:
     if hstreamer["media_is_live"] is "1":
@@ -184,16 +189,18 @@ def allstreamer_status(bot, trigger):
     for streamer in streaming["streams"]:
       streamer_name = streamer["channel"]["name"]
       streamer_game = streamer["channel"]["game"]
+      streamer_status = streamer["channel"]["status"]
       streamer_url = streamer["channel"]["url"]
       streamer_viewers = streamer["viewers"]
 
-      results.append("%s is playing %s (%s - %s viewer%s)" % (streamer_name,
+      results.append("%s is playing %s [%s] (%s - %s viewer%s)" % (streamer_name,
                                                            streamer_game,
+                                                           streamer_status,
                                                            streamer_url,
                                                            streamer_viewers,
                                                            "s" if streamer_viewers != 1 else "" ))
   query = ",".join(hstreamers)
-  hstreaming = requests.get('http://api.hitbox.tv/media/live/{0}'.format(query)).json()
+  hstreaming = requests.get('http://api.smashcast.tv/media/live/{0}'.format(query)).json()
   hresults = []
   if hstreaming.get("livestream"):
     for hstreamer in hstreaming["livestream"]:
