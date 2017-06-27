@@ -41,14 +41,17 @@ hstreamers = [
 #end config
 
 twitchregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+mixerregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = SopelMemory()
     bot.memory['url_callbacks'][twitchregex] = twitchirc
+    bot.memory['url_callbacks'][mixerregex] = mixerirc
 
 def shutdown(bot):
     del bot.memory['url_callbacks'][twitchregex]
+    del bot.memory['url_callbacks'][mixerregex]
 
 currently_streaming = {}
 currently_hstreaming = {}
@@ -245,6 +248,28 @@ def twitchirc(bot, trigger, match = None):
   else:
     pass
     #bot.say("Nobody is currently streaming.")
+
+@sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
+def mixerirc(bot, trigger, match = None):
+  match = match or trigger
+  streamer_name = match.group(1)
+  streaming = requests.get('https://mixer.com/api/v1/channels/{}'.format(streamer_name)).json()
+  results = []
+  if streaming:
+    streamer_name = streaming["token"]
+    streamer_game = streaming["type"]["name"]
+    streamer_status = streaming["name"]
+    streamer_viewers = streaming["viewersCurrent"]
+
+  results.append("%s is playing %s [%s] - %s viewer%s" % (streamer_name,
+                                                         streamer_game,
+                                                         streamer_status,
+                                                         streamer_viewers,
+                                                         "s" if streamer_viewers != 1 else "" ))
+  if results:
+    bot.say(", ".join(results))
+  else:
+    pass
 
 @sopel.module.commands('debugtv')
 def debug(bot, trigger):
