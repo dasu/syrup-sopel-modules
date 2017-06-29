@@ -257,7 +257,10 @@ def mixerirc(bot, trigger, match = None):
   results = []
   if streaming:
     streamer_name = streaming["token"]
-    streamer_game = streaming["type"]["name"]
+    if streaming.get("type"):
+      streamer_game = streaming["type"]["name"]
+    else:
+      streamer_game = "a game"
     streamer_status = streaming["name"]
     streamer_viewers = streaming["viewersCurrent"]
 
