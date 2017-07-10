@@ -46,8 +46,8 @@ def getinfo(run,now):
 def gdq(bot, trigger):
     now = datetime.utcnow()
     now = now.replace(tzinfo=timezone.utc)
-    delta = datetime(2017,7,,16,30,tzinfo=timezone.utc) - now
-    textdate = "July 2"
+    delta = datetime(2018,1,7,16,30,tzinfo=timezone.utc) - now
+    textdate = "January 7"
     url = 'https://gamesdonequick.com/schedule'
     try:
         x = requests.get(url).content
