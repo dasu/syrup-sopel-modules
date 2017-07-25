@@ -1,183 +1,63 @@
-import json
-import decimal
+# Flexible crypto currency module
+# Created by @sc0tt (https://github.com/sc0tt)
 import requests
+import sys
+import json
 import sopel
 
-lastPrice = 0
-lastLTCPrice = 0
-lastDogePrice = 0
-lastETHPrice = 0
+last_prices = {}
+main_coins = ["btc", "xrp", "eth"]
+single_url = "http://api.cryptocoincharts.info/tradingPair/{0}_{1}"
+multi_url = "http://api.cryptocoincharts.info/tradingPairs"
 
-def calcdoge2usd(num):
-   uri = "http://api.cryptocoincharts.info/tradingPair/doge_btc"
-   data = requests.get(uri).json()
-   return calcbtc2usd(decimal.Decimal(num) * decimal.Decimal(data["price"]))
+@sopel.module.rule('^\.(\w+)2(\w+)\s?(\d+)?$')
+def crypto_exchange(bot, trigger):
+  from_cur = trigger.group(1)
+  to_cur = trigger.group(2)
+  quantity = float(trigger.group(3)) if trigger.group(3) is not None else 1
 
-@sopel.module.commands('doge2usd')
-def doge2usd(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcdoge2usd(arg)
-      usd = decimal.Decimal(arg)
-      output = '%s DOGE will get you $%s' % (usd, rate)
-      bot.say(output)
+  api_result = requests.get(single_url.format(from_cur, to_cur)).json()
+  calc_result = quantity * float(api_result["price"])
 
-@sopel.module.commands('doge')
-def dogecoin(bot, trigger):
-   global lastDogePrice
-   uri = "http://api.cryptocoincharts.info/tradingPair/doge_btc"   
-   data = requests.get(uri).json()
-   data["price"] = calcbtc2usd(data["price"])
-   diff = decimal.Decimal(data["price"]) - lastDogePrice
-   diffStr = ""
-   if diff != decimal.Decimal(0):
-      sign = "+" if diff > 0 else ''
-      diffStr = " (%s%s)" % (sign, diff)
-   output = 'Current Price of 1 DOGE: $%s%s' % (data["price"], diffStr)
-   lastDogePrice = decimal.Decimal(data["price"])
-   bot.say(output)
+  bot.say("{0} {1} is about {2:.4f} {3}".format(quantity, api_result["coin1"], float(calc_result), api_result["coin2"]))
 
+@sopel.module.rule('^\.({0})$'.format("|".join(main_coins)))
+def crypto_spot(bot, trigger):
+  from_cur = trigger.group(1)
+  global last_prices
+  from_cur = from_cur.lower()
+  if from_cur not in main_coins:
+    bot.say("Invalid currency!")
 
-def calcbtc2usd(num):
-   uri = "https://coinbase.com/api/v1/currencies/exchange_rates"
-   data = requests.get(uri).json()
-   return decimal.Decimal(num) * decimal.Decimal(data["btc_to_usd"])
+  api_result = requests.get(single_url.format(from_cur, "usd")).json()
 
-def calcusd2btc(num):
-   uri = "https://coinbase.com/api/v1/currencies/exchange_rates"
-   data = requests.get(uri).json()
-   return decimal.Decimal(num) * decimal.Decimal(data["usd_to_btc"])
+  if from_cur not in last_prices:
+    last_prices[from_cur] = 0
 
-@sopel.module.commands('btc')
-def bitcoin(bot, trigger):
-   global lastPrice
-   uri = "https://coinbase.com/api/v1/prices/spot_rate"
-   data = requests.get(uri).json()
-   diff = decimal.Decimal(data["amount"]) - lastPrice
-   diffStr = ""
-   if diff != decimal.Decimal(0):
-      sign = "+" if diff > 0 else ''
-      diffStr = " (%s%s)" % (sign, diff)
-   output = 'Current Price of ฿1: $%s%s' % (data["amount"], diffStr)
-   lastPrice = decimal.Decimal(data["amount"])
-   bot.say(output)
-
-   
-@sopel.module.commands('btc2usd')
-def btc2usd(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcbtc2usd(arg)
-      usd = decimal.Decimal(arg)
-      output = '฿%s will get you $%s' % (usd, rate)
-      bot.say(output)
-
-@sopel.module.commands('usd2btc')
-def usd2btc(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcusd2btc(arg)
-      usd = decimal.Decimal(arg)
-      output = '$%s will get you ฿%s' % (usd, rate)
-      bot.say(output)
-
-def calcltc2usd(num):
-   uri = "https://btc-e.com/api/3/ticker/ltc_usd"
-   data = requests.get(uri).json()
-   return decimal.Decimal(num) * decimal.Decimal(data["ltc_usd"]["last"])
-
-def calcusd2ltc(num):
-   uri = "https://btc-e.com/api/3/ticker/ltc_usd"
-   data = requests.get(uri).json()
-   usdPerLtc = decimal.Decimal("1.0") / decimal.Decimal(data["ltc_usd"]["last"])
-   return decimal.Decimal(num) * usdPerLtc
-
-def calceth2usd(num):
-   uri = "https://btc-e.com/api/3/ticker/eth_usd"
-   data = requests.get(uri).json()
-   return decimal.Decimal(num) * decimal.Decimal(data["eth_usd"]["last"])
-
-def calcusd2eth(num):
-   uri = "https://btc-e.com/api/3/ticker/eth_usd"
-   data = requests.get(uri).json()
-   usdPerEth = decimal.Decimal("1.0") / decimal.Decimal(data["eth_usd"]["last"])
-   return decimal.Decimal(num) * usdPerEth
-
-   
-@sopel.module.commands('ltc')
-def litecoin(bot, trigger):
-   global lastLTCPrice
-   uri = "https://btc-e.com/api/3/ticker/ltc_usd"
-   data = requests.get(uri).json()
-   diff = decimal.Decimal(data["ltc_usd"]["last"]) - lastLTCPrice
-   diffStr = ""
-   if diff != decimal.Decimal(0):
-      sign = "+" if diff > 0 else ''
-      diffStr = " (%s%0.5f)" % (sign, diff)
-   output = 'Current Price of Ł1: $%0.5f%s' % (data["ltc_usd"]["last"], diffStr)
-   lastLTCPrice = decimal.Decimal(data["ltc_usd"]["last"])
-   bot.say(output)
-
-@sopel.module.commands('ltc2usd')
-def ltc2usd(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcltc2usd(arg)
-      usd = decimal.Decimal(arg)
-      output = 'Ł%s will get you $%.05f' % (usd, rate)
-      bot.say(output)
-
-@sopel.module.commands('usd2ltc')
-def usd2ltc(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcusd2ltc(arg)
-      usd = decimal.Decimal(arg)
-      output = '$%s will get you Ł%.05f' % (usd, rate)
-      bot.say(output)
-      
-@sopel.module.commands('eth')
-def ETH(bot, trigger):
-   global lastETHPrice
-   uri = "https://btc-e.com/api/3/ticker/eth_usd"
-   data = requests.get(uri).json()
-   diff = decimal.Decimal(data["eth_usd"]["last"]) - lastETHPrice
-   diffStr = ""
-   if diff != decimal.Decimal(0):
-      sign = "+" if diff > 0 else ''
-      diffStr = " (%s%0.5f)" % (sign, diff)
-   output = 'Current Price of Ξ1: $%0.5f%s' % (data["eth_usd"]["last"], diffStr)
-   lastETHPrice = decimal.Decimal(data["eth_usd"]["last"])
-   bot.say(output)
-
-@sopel.module.commands('eth2usd')
-def eth2usd(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calceth2usd(arg)
-      usd = decimal.Decimal(arg)
-      output = 'Ξ%s will get you $%.05f' % (usd, rate)
-      bot.say(output)
-
-@sopel.module.commands('usd2eth')
-def usd2eth(bot, trigger):
-   arg = trigger.group(2)
-   #If an argument is provided, convert the exchange rate
-   if arg:
-      rate = calcusd2eth(arg)
-      usd = decimal.Decimal(arg)
-      output = '$%s will get you Ξ%.05f' % (usd, rate)
-      bot.say(output)
+  diffStr = getDiffString(float(api_result["price"]), last_prices[from_cur])
+  last_prices[from_cur] = float(api_result["price"])
+  bot.say("{0}: ${1:.4f}{2}".format(api_result["id"], float(api_result["price"]), diffStr))
 
 @sopel.module.commands('ticker','tick')
-def ticker(bot, trigger):
-   bitcoin(bot, trigger)
-   litecoin(bot, trigger)
-   dogecoin(bot, trigger)
-   ETH(bot,trigger)
+def tick(bot, trigger):
+  global last_prices
+  pairs = ",".join(["{0}_usd".format(x) for x in main_coins])
+  api_result = requests.post(multi_url, data={"pairs": pairs}).json()
+
+  for currency in api_result:
+    coin = currency["id"].split("/")[0]
+
+    if coin not in last_prices:
+      last_prices[coin] = 0
+
+    diffStr = getDiffString(float(currency["price"]), last_prices[coin])
+    last_prices[coin] = float(currency["price"])
+    bot.say("{0}: ${1:.4f}{2}".format(currency["id"], float(currency["price"]), diffStr))
+
+def getDiffString(current_price, last_price):
+  diff = current_price - last_price
+  diffStr = ""
+  if diff != 0:
+    sign = "+" if diff > 0 else ''
+    diffStr = " ({0}{1:.4f})".format(sign, diff)
+  return diffStr
