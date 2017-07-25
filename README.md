@@ -11,7 +11,7 @@ Outputs RSS news from animenewsnetwork, I think the latest commit broke it, so u
 ##### bday.py
 Notifies channel when a user has their birthday (every 6 hours on the day of the birthday), or how many days away the next birthday is. refer to data.txt to see how the user's birthdays are suppose to be set up.
 ##### bitcoin.py
-Bitcoin/LTC/DOGE module. Based off of https://github.com/sc0tt/boredbot-modules/blob/master/bitcoin.py
+Bitcoin/ETH/XRP module. You can add more memecoins in too. Based off of https://github.com/sc0tt/boredbot-modules/blob/master/bitcoin.py
 ##### dubtrack.py
 Dubtrack (and plugdj) module.  Dubtrack has a really nice API.  plugdj does not, but whatever.
 ##### edict.py
@@ -57,7 +57,7 @@ Traffic/duration to location module that works off the .setlocation set for user
 ##### trivia.py
 Trivia module, by @sc0tt 
 ##### twitch.py
-Module for getting info on a twitch/hitbox(and a specific user on youtube streaming) channel assuming they are currently streaming, as well as setting up a notification announcement for set twitch/hitbox users when they start streaming. Gives info on twitch users when a twitch url is posted.  Requires hitbox, twitch, youtube API keys.  By default it checks every ten seconds for streaming status of specified users, this adds up!  25920 url calls or more a day.  Twitch API is slow, don't expect instant announcements (sometimes 1m lag time on api), hitbox is p. good and quick.  There are slight issues with it, may randomly not work, and it requires probably a complete rewrite. :|  Now requires Client-ID from twitch: https://www.twitch.tv/settings/connections
+Module for getting info on a twitch/smashcast/mixer channel assuming they are currently streaming, as well as setting up a notification announcement for set twitch/smashcast users when they start streaming. Gives info on twitch users when a twitch url is posted.  Requires hitbox, twitch, youtube API keys.  By default it checks every ten seconds for streaming status of specified users, this adds up!  25920 url calls or more a day.  Twitch API is slow, don't expect instant announcements (sometimes 1m lag time on api), hitbox is p. good and quick.  There are slight issues with it, may randomly not work, and it requires probably a complete rewrite (now in progress). :|  Now requires Client-ID from twitch: https://www.twitch.tv/settings/connections
 ##### urbandict.py
 Outputs urban dictionary definitions for input words.  I'm not 100% sure where this came from, probably a modified version of this: https://github.com/mutantmonkey/phenny/blob/master/modules/urbandict.py
 ##### vndb.py
