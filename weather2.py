@@ -62,42 +62,31 @@ def get_temp(forecast):
         else:
             return (u'%d\u00B0C, (App:%d, H:%d|L:%d)' % (temp, app_temp, high, low))
 
-def get_uv(postal):
-    try:
-        uvreq = requests.get("https://iaspub.epa.gov/enviro/efservice/getEnvirofactsUVHOURLY/ZIP/{}/JSON".format(postal)).json()
-    except:
-        return ''
-    now = datetime.now()
-    for i, item in enumerate(uvreq):
-        dt = datetime.strptime(item['DATE_TIME'],'%b/%d/%Y %I %p')
-        if dt > now:
-            uvindex = uvreq[i-1]['UV_VALUE']
-            break
-    if 'uvindex' not in vars():
-        return  
-    if uvreq:
-        if uvindex <3:
+def get_uv(forecast):
+    currentuv = forecast.json()['currently']['uvIndex']
+    maxuv = forecast.json()['daily']['data'][0]['uvIndex']
+    if currentuv:
+        if currentuv <3:
             color = "\x0303"
-        elif (uvindex >=3) and (uvindex < 6):
+        elif (currentuv >=3) and (currentuv < 6):
             color = "\x0308"
-        elif (uvindex >=6) and (uvindex < 8):
+        elif (currentuv >=6) and (currentuv < 8):
             color = "\x0307"
-        elif (uvindex >=8) and (uvindex < 11):
+        elif (currentuv >=8) and (currentuv < 11):
             color = "\x0304"
         else:
             color = "\x0306"
-        max2 = max(uvreq,key=lambda uvreq: uvreq['UV_VALUE'])['UV_VALUE']
-        if max2 <3:
+        if maxuv <3:
             maxcolor = "\x0303"
-        elif (max2 >=3) and (max2 < 6):
+        elif (maxuv >=3) and (maxuv < 6):
             maxcolor = "\x0308"
-        elif (max2 >=6) and (max2 < 8):
+        elif (maxuv >=6) and (maxuv < 8):
             maxcolor = "\x0307"
-        elif (max2 >=8) and (max2 < 11):
+        elif (maxuv >=8) and (maxuv < 11):
             maxcolor = "\x0304"
         else:
             maxcolor = "\x0306"
-        return ", UV:{}{}\x0F|{}{}\x0F".format(color,uvindex,maxcolor,max2)
+        return ", UV:{}{}\x0F|{}{}\x0F".format(color,currentuv,maxcolor,maxuv)
     else:
         return ''
 
@@ -343,7 +332,7 @@ def weatherfull(bot, trigger):
     humidity = forecast.json()['currently']['humidity']
     wind = get_wind(forecast)
     alert = get_alert(forecast)
-    uv = get_uv(postal) if postal else ''
+    uv = get_uv(forecast)
     sun = get_sun(forecast.json()['timezone'], forecast.json()['daily']['data'][0])
     bot.say(u'%s: %s, %s, Humidity: %s%%, %s%s%s%s' % (location, summary, temp, round(humidity*100), wind, sun, uv, alert))
 
