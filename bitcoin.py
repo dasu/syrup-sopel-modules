@@ -10,7 +10,7 @@ main_coins = ["btc", "xrp", "eth"]
 single_url = "http://api.cryptocoincharts.info/tradingPair/{0}_{1}"
 multi_url = "http://api.cryptocoincharts.info/tradingPairs"
 
-@sopel.module.rule('^\.(\w+)2(\w+)\s?(\d+)?$')
+@sopel.module.rule('^\.(\w+)2(\w+)\s?(.+)?$')
 def crypto_exchange(bot, trigger):
   from_cur = trigger.group(1)
   to_cur = trigger.group(2)
