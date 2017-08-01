@@ -43,7 +43,8 @@ def tick(bot, trigger):
   global last_prices
   pairs = ",".join(["{0}_usd".format(x) for x in main_coins])
   api_result = requests.post(multi_url, data={"pairs": pairs}).json()
-
+  
+  results = []
   for currency in api_result:
     coin = currency["id"].split("/")[0]
 
@@ -52,7 +53,8 @@ def tick(bot, trigger):
 
     diffStr = getDiffString(float(currency["price"]), last_prices[coin])
     last_prices[coin] = float(currency["price"])
-    bot.say("{0}: ${1:.4f}{2}".format(currency["id"], float(currency["price"]), diffStr))
+    results.append("{0}: ${1:.4f}{2}".format(currency["id"], float(currency["price"]), diffStr))
+  bot.say(" | ".join(results))
 
 def getDiffString(current_price, last_price):
   diff = current_price - last_price
