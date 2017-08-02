@@ -65,7 +65,7 @@ def get_temp(forecast):
 def get_uv(forecast):
     currentuv = forecast.json()['currently']['uvIndex']
     maxuv = forecast.json()['daily']['data'][0]['uvIndex']
-    if currentuv:
+    if currentuv or currentuv == 0:
         if currentuv <3:
             color = "\x0303"
         elif (currentuv >=3) and (currentuv < 6):
