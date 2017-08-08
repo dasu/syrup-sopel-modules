@@ -40,6 +40,8 @@ Pushbullet module.  At work and someone posted a link to something interesting, 
 Pixiv module to search pixiv (jp and en) images.  Warning, this has a higher memory/cpu usage compared to other modules.
 ##### remind.py
 A modified remind.py (from sopel's own plugins).  defaults to minutes when entering a number, does not require a message.  Adds a 'LP' unit of time, which is 6 minutes, for love live school idol festival players. 
+##### search2.py
+A modified search.py (from sopel's own plugins). Mostly changed the UK->US and removed ads from showing up in results.
 ##### shadowverse.py
 Get info about cards from some random waifu card fighting game. created by @agricola 
 ##### smug.py
@@ -60,6 +62,8 @@ Trivia module, by @sc0tt
 Module for getting info on a twitch/smashcast/mixer channel assuming they are currently streaming, as well as setting up a notification announcement for set twitch/smashcast users when they start streaming. Gives info on twitch users when a twitch url is posted.  Requires hitbox, twitch, youtube API keys.  By default it checks every ten seconds for streaming status of specified users, this adds up!  25920 url calls or more a day.  Twitch API is slow, don't expect instant announcements (sometimes 1m lag time on api), hitbox is p. good and quick.  There are slight issues with it, may randomly not work, and it requires probably a complete rewrite (now in progress). :|  Now requires Client-ID from twitch: https://www.twitch.tv/settings/connections
 ##### urbandict.py
 Outputs urban dictionary definitions for input words.  I'm not 100% sure where this came from, probably a modified version of this: https://github.com/mutantmonkey/phenny/blob/master/modules/urbandict.py
+##### url2.py
+A modified url.py (from sopel's own plugins).  Add BeautifulSoup support, which should give improved results for url titles, fallsback to regex (old way) if any issues. Requires bs4 module. 
 ##### vndb.py
 Gets information about a visual novel.  Requires tags.json to be downloaded from vndb.  You should probably rename the client name/version as well.  Based on https://github.com/theappleman/pyvndb 
 ##### wait.py
