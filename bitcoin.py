@@ -56,10 +56,32 @@ def tick(bot, trigger):
     results.append("{0}: ${1:.4f}{2}".format(currency["id"], float(currency["price"]), diffStr))
   bot.say(" | ".join(results))
 
-def getDiffString(current_price, last_price):
+def getDiffString(current_price, last_price, crates=False):
   diff = current_price - last_price
   diffStr = ""
   if diff != 0:
     sign = "+" if diff > 0 else ''
-    diffStr = " ({0}{1:.4f})".format(sign, diff)
+    diffStr = " ({0}{1:.{2}f})".format(sign, diff, 2 if crates else 4)
   return diffStr
+
+def getSteamMarketPrice(item):
+  global last_prices
+  steam_price = requests.get("https://steamcommunity.com/market/priceoverview/?appid=578080&currency=1&market_hash_name={}".format(item)).json()
+  name = item.replace(" CRATE","")
+  name = name.replace(" INVITATIONAL","")
+  lowest_price = steam_price['lowest_price']
+  if name not in last_prices:
+    last_prices[name] = '$0'
+    last_price = '$0'
+  last_price = last_prices[name]
+  diffStr = getDiffString(float(lowest_price[1:]),float(last_price[1:]), True)
+  last_prices[name] = lowest_price
+  return "{0}: {1}{2}".format(name, lowest_price, diffStr)
+
+@sopel.module.commands('crates')
+def crates(bot, trigger):
+  crates = ['SURVIVOR CRATE','WANDERER CRATE','GAMESCOM INVITATIONAL CRATE']
+  results = []
+  for crate in crates:
+    results.append(getSteamMarketPrice(crate))
+  bot.say(" | ".join(results))
