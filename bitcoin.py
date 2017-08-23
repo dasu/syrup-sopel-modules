@@ -6,7 +6,7 @@ import json
 import sopel
 
 last_prices = {}
-main_coins = ["btc", "xrp", "eth"]
+main_coins = ["btc", "bch", "xrp", "eth"]
 single_url = "http://api.cryptocoincharts.info/tradingPair/{0}_{1}"
 multi_url = "http://api.cryptocoincharts.info/tradingPairs"
 
