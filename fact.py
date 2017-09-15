@@ -127,7 +127,16 @@ def fact(bot, trigger):
         "The causes you have taken up are laughable", 
         "A garbage bag is just as good a home to a dead man", 
         "The worms look at you as a number waiting to be called out in the deli line", 
-        "Nothing will make up for the shameful things you have done"
+        "Nothing will make up for the shameful things you have done",
+        "The existence of a soul has never been proven for a reason",
+        "All that you have done is all that you could have done",
+        "You are a part of this society",
+        "Depression is a side effect of dying",
+        "One-fourth of homeless people in the United States are children",
+        "Hundreds of millions of people are born into a poverty from which they cannot escape",
+        "Miscommunication between two people can have deadly consequences",
+        "A successful marriage ends with you watching the other die",
+        "Penguins can not fly"
         ]
 
     bot.say(":V Fact Seagull says: {}".format(random.choice(x)))
