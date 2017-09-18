@@ -42,7 +42,7 @@ def duck_search(query):
     query = query.replace('!', '')
     uri = 'http://duckduckgo.com/html/?q=%s&kl=us-en' % query
     #bytes = web.get(uri)
-    bytes = requests.get(uri, headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari$
+    bytes = requests.get(uri, headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'})
     if 'web-result"' in bytes.text:  # filter out the adds on top of the page
         bytes = bytes.text.split('web-result"')[1]
     m = r_duck.search(bytes.text)
