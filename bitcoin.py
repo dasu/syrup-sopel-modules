@@ -33,10 +33,10 @@ def crypto_spot(bot, trigger):
 
   if from_cur not in last_prices:
     last_prices[from_cur] = 0
-
-  diffStr = getDiffString(float(api_result["last_price"]), last_prices[from_cur])
+  digits = False if from_cur.lower()=='xrp' else True
+  diffStr = getDiffString(float(api_result["last_price"]), last_prices[from_cur], digits)
   last_prices[from_cur] = float(api_result["last_price"])
-  bot.say("{0}: ${1:.4f}{2}".format(from_cur, float(api_result["last_price"]), diffStr))
+  bot.say("{0}: ${1:.{2}f}{3}".format(from_cur, float(api_result["last_price"]), 2 if digits else 4, diffStr))
 
 @sopel.module.commands('ticker','tick')
 def tick(bot, trigger):
@@ -46,9 +46,10 @@ def tick(bot, trigger):
     api_result = requests.get(single_url.format(coin)).json()
     if coin not in last_prices:
       last_prices[coin] = 0
-    diffStr = getDiffString(float(api_result["last_price"]), last_prices[coin])
+    digits = False if coin.lower() == 'xrp' else True
+    diffStr = getDiffString(float(api_result["last_price"]), last_prices[coin], digits)
     last_prices[coin] = float(api_result["last_price"])
-    results.append("{0}: ${1:.4f}{2}".format(coin, float(api_result["last_price"]), diffStr))
+    results.append("{0}: ${1:.{2}f}{3}".format(coin, float(api_result["last_price"]), 2 if digits else 4, diffStr))
   bot.say(" | ".join(results))
 
 def getDiffString(current_price, last_price, crates=False):
