@@ -166,11 +166,14 @@ def get_wind(forecast):
 def get_alert(forecast):
     try:
         fullalerts = []
+        uris = []
         if forecast.json()['alerts'][0]:
             for alerts in forecast.json()['alerts']:
-                title = alerts['title']
-                alert = get_short_url(alerts['uri'])
-                fullalerts.append("{} {}".format(title, alert))
+                if alerts['uri'] not in uris:
+                    title = alerts['title']
+                    uris.append(alerts['uri'])
+                    alert = get_short_url(alerts['uri'])
+                    fullalerts.append("{} {}".format(title, alert))
             return ' | Alert: {}'.format(", ".join(fullalerts))
         else:
             return ''
