@@ -38,6 +38,8 @@ Outputs information on nicovideo urls when they're posted to the channel.
 Pushbullet module.  At work and someone posted a link to something interesting, but can't/shouldn't view it?  Push it to your phone instead to safely view it.  Requires pushbullet API key.
 ##### pixiv.py
 Pixiv module to search pixiv (jp and en) images.  Warning, this has a higher memory/cpu usage compared to other modules.
+##### ratewaifu.py
+A waifu rating module that provides absolutely no value. Don't forget, you're waifu a shit tho.
 ##### remind.py
 A modified remind.py (from sopel's own plugins).  defaults to minutes when entering a number, does not require a message.  Adds a 'LP' unit of time, which is 6 minutes, for love live school idol festival players. 
 ##### search2.py
