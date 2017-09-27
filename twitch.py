@@ -40,7 +40,7 @@ hstreamers = [
 ]
 #end config
 
-twitchregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+twitchregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 mixerregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
 
 def setup(bot):
@@ -224,7 +224,7 @@ def allstreamer_status(bot, trigger):
   else:
     bot.say("Nobody is currently streaming.")
 
-@sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:www\.)?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+@sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 def twitchirc(bot, trigger, match = None):
   match = match or trigger
   streamer_name = match.group(1)
