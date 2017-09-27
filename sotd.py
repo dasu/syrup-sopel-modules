@@ -11,9 +11,7 @@ import requests
 import shutil
 import random
 import string
-import youtube_dl
-import subprocess
-import os
+import youtube_dl  #you will get .isatty() errors, and the only way I know how to fix this is by removing those checks from youtube_dl
 from nicovideo import Nicovideo
 #what a mess
 
@@ -55,22 +53,21 @@ def fetch_yt_video_info(bot,id):
         'dislikes': video['statistics'].get('dislikeCount') or '0',
         'link': 'https://youtu.be/' + video['id']
     }
-    '''bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+    bksongname = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
     ydl_opts = {
         'format': 'bestaudio/best',
-        'prefer_ffmpeg': True,
         'quiet': True,
-        'outtmpl': '/path/to/songs/folder/{}'.format(bksongname+".%(ext)s")
+        'outtmpl': '/path/to/songs/folder/{}'.format(bksongname+".%(ext)s"),
+        'postprocessors':[{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         x = ydl.download(['http://www.youtube.com/watch?v={}'.format(id)])
-    os.chdir('/path/to/songs/folder/')
-    subprocess.call(['ffmpeg','-y','-i','{}.webm'.format(bksongname),'{}.mp3'.format(bksongname)],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    '''
-    bksongname = ""
     return info, bksongname
-    
-    
+
 def soundcloudinfo(link):
     client = soundcloud.Client(client_id='')
     track = client.get('/resolve', url = link, client_id='')
@@ -84,7 +81,6 @@ def soundcloudinfo(link):
     except:
         bksongname = ""
     return "{0} - {1}".format(track.user['username'],track.title),bksongname
-        
 
 def mysql(name=None, link=None, song=None, sdate=None, bksongname=None, action=None):
     connection = pymysql.connect(host='', user='',passwd='', db='',charset='utf8')
@@ -101,8 +97,6 @@ def mysql(name=None, link=None, song=None, sdate=None, bksongname=None, action=N
         connection.close()
         return res
     connection.close()
-
-
 
 @sopel.module.commands('sotd')
 @sopel.module.example('.sotd weblink | website for history: weblink')
@@ -170,4 +164,3 @@ def sotd(bot, trigger):
 @sopel.module.commands('websotd')
 def sotdweb(bot,trigger):
     bot.say("Website for history: weblink")
-
