@@ -52,6 +52,8 @@ Outputs a random smug anime image out of 71 choices.
 Song of the Day module.  Allows users to submit a song of the day to be recorded on a database.  Supports youtube, soundcloud, bandcamp songs.  Requires lots of setup and different api keys.
 ##### soundcloudurl.py
 Outputs information on soundcloud urls when they're posted to the channel.  Requires a soundcloud clientID
+##### steam.py
+Outputs ratings/peak players 24h, price and release date (if coming soon), also works off posted links.
 ##### stocks.py
 Outputs the dow jones index average, or search your own favourite stocks!  Info comes from finance.google.com, and has a 15 minute stocks delay.
 ##### sync.py
