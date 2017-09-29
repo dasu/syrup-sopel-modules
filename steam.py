@@ -75,7 +75,7 @@ def steam(bot,trigger):
         bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
-                                            " Price: {}{}".format(gameinfo['price'], gameinfo['discount'] if gameinfo['discount'] else '') if gameinfo['price'] else '',
+                                            " Price: {}{}".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
                                             " | Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
 
 @sopel.module.rule('.*https?:\/\/store\.steampowered\.com\/app\/(.*?\/)(?:.*?\/)?(?:.*)((?=[\s])|$)')
@@ -88,5 +88,5 @@ def steamirc(bot,trigger, match=None):
     bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
-                                            " Price: {}{}".format(gameinfo['price'], gameinfo['discount'] if gameinfo['discount'] else '') if gameinfo['price'] else '',
+                                            " Price: {}{}".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
                                             " | Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
