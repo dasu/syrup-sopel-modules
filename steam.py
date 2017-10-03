@@ -70,7 +70,7 @@ def steam(bot,trigger):
         if not appid:
             return
         gameinfo = getgameinfo(appid)
-        averageplayers = getaverageplayers24h(appid)
+        averageplayers = "{:,}".format(int(getaverageplayers24h(appid)))
         rating = getreviewdata(appid)
         bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
@@ -83,7 +83,7 @@ def steamirc(bot,trigger, match=None):
     match = match or trigger
     appid = match.group(1)[:-1]
     gameinfo = getgameinfo(appid)
-    averageplayers = getaverageplayers24h(appid)
+    averageplayers = "{:,}".format(int(getaverageplayers24h(appid)))
     rating = getreviewdata(appid)
     bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
