@@ -45,11 +45,14 @@ def getgameinfo(appid):
     return gameinfo
     
 def getaverageplayers24h(appid):
-    bs = BeautifulSoup(requests.get("http://steamcharts.com/app/{}".format(appid)).content, "html.parser")
-    players = bs.find_all('div',{'class':'app-stat'})[1].span.text
+    try:
+        bs = BeautifulSoup(requests.get("http://steamcharts.com/app/{}".format(appid)).content, "html.parser")
+        players = bs.find_all('div',{'class':'app-stat'})[1].span.text
+    except:
+        return ''
     if players == '0':
         players = ''
-    return players
+    return "{:,}".format(int(players)) if players else ''
 
 def getreviewdata(appid):
     review = {}
@@ -70,23 +73,23 @@ def steam(bot,trigger):
         if not appid:
             return
         gameinfo = getgameinfo(appid)
-        averageplayers = "{:,}".format(int(getaverageplayers24h(appid)))
+        averageplayers = getaverageplayers24h(appid)
         rating = getreviewdata(appid)
         bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
-                                            " Price: {}{}".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
-                                            " | Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
+                                            " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
+                                            " Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
 
 @sopel.module.rule('.*https?:\/\/store\.steampowered\.com\/app\/(.*?\/)(?:.*?\/)?(?:.*)((?=[\s])|$)')
 def steamirc(bot,trigger, match=None):
     match = match or trigger
     appid = match.group(1)[:-1]
     gameinfo = getgameinfo(appid)
-    averageplayers = "{:,}".format(int(getaverageplayers24h(appid)))
+    averageplayers = getaverageplayers24h(appid)
     rating = getreviewdata(appid)
     bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
-                                            " Price: {}{}".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
-                                            " | Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
+                                            " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
+                                            " Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
