@@ -13,7 +13,7 @@ from datetime import datetime
 from time import sleep
 import re
 
-instagramregex = re.compile('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_]+)\s?.*')
+instagramregex = re.compile('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_-]+)\s?.*')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -27,7 +27,7 @@ def shutdown(bot):
 # TODO: Parse Instagram profile page
 
 
-@rule('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_]+)\s?.*')
+@rule('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_-]+)\s?.*')
 def instaparse(bot, trigger):
     # Get the embedded JSON
     json = { 'entry_data': '' }
