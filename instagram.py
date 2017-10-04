@@ -10,9 +10,10 @@ from sopel.module import rule
 from sopel.tools import SopelMemory
 from requests import get
 from datetime import datetime
+from time import sleep
 import re
 
-instagramregex = re.compile('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/.+\/?).*')
+instagramregex = re.compile('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_]+)\s?.*')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -26,10 +27,23 @@ def shutdown(bot):
 # TODO: Parse Instagram profile page
 
 
-@rule('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/.+\/?).*')
+@rule('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_]+)\s?.*')
 def instaparse(bot, trigger):
     # Get the embedded JSON
-    json = get_insta_json(trigger.group(1))
+    json = { 'entry_data': '' }
+    counter = 0
+    # Instagram is unreliable
+    while 'PostPage' not in json['entry_data']:
+        json = get_insta_json(trigger.group(1))
+        sleep(0.1)
+        counter = counter + 1
+        # Try 10 times to get the JSON
+        if counter > 10:
+            bot.say("[insta] Error")
+            break
+
+    if counter > 10:
+        return
     bot.say(parse_insta_json(json))
     
     
