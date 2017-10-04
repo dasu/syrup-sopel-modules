@@ -30,20 +30,7 @@ def shutdown(bot):
 @rule('.*(https?:\/\/(?:www\.){0,1}instagram\.com\/p\/[a-zA-Z0-9_-]+)\s?.*')
 def instaparse(bot, trigger):
     # Get the embedded JSON
-    json = { 'entry_data': '' }
-    counter = 0
-    # Instagram is unreliable
-    while 'PostPage' not in json['entry_data']:
-        json = get_insta_json(trigger.group(1))
-        sleep(0.1)
-        counter = counter + 1
-        # Try 10 times to get the JSON
-        if counter > 10:
-            bot.say("[insta] Error")
-            break
-
-    if counter > 10:
-        return
+    json = get_insta_json(trigger.group(1))
     bot.say(parse_insta_json(json))
     
     
@@ -99,4 +86,3 @@ def parse_insta_json(json):
     
     # Ta-da!
     return botmessage
-
