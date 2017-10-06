@@ -52,6 +52,8 @@ Outputs a random smug anime image out of 71 choices.
 Song of the Day module.  Allows users to submit a song of the day to be recorded on a database.  Supports youtube, soundcloud, bandcamp songs.  Requires lots of setup and different api keys.
 ##### soundcloudurl.py
 Outputs information on soundcloud urls when they're posted to the channel.  Requires a soundcloud clientID
+##### ssthis.py [inprogress]
+Did someone make an outrageous claim by x date along with 'ss this'? This module will eventually track all those claims and announce back to the channel when the claim's date comes.  Requires wit.ai api key for the natural language processor to get the claim date, and setting up a local mysql db, and an optional web view of it to view claims if you want. 'dow jones 40k by april ss this' -local retard
 ##### steam.py
 Outputs ratings/peak players 24h, price and release date (if coming soon), also works off posted links.
 ##### stocks.py
