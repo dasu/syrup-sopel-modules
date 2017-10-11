@@ -3,6 +3,7 @@ import requests
 import base64
 from PIL import Image
 from io import BytesIO
+import sys
 
 expire = 0
 token = '' #api token for whatanime.ga, instruction to get one: https://soruly.github.io/whatanime.ga/ 
@@ -27,13 +28,20 @@ def wait(bot,trigger):
     if not check_image(imageurl):
         return bot.say("Doesn't seem to be an image type.  Direct image links only.")
     imgdata = requests.get(imageurl)
-    if int(imgdata.headers['Content-Length']) >= 999999:
+    b64 = base64.b64encode(imgdata.content)
+    if sys.getsizeof(b64) > 999999:
         img = Image.open(BytesIO(imgdata.content))
+        if img.format == "GIF":
+            try:
+                img.seek(2)
+            except:
+                img.seek(0)
+            img = img.convert("RGB")
+        if img.mode in ('RGBA', 'LA'):
+            img = img.convert("RGB")
         img.save("/tmp/temp.jpg")
         with open("/tmp/temp.jpg", "rb") as img_tmp:
             b64 = base64.b64encode(img_tmp.read())
-    else:
-        b64 = base64.b64encode(imgdata.content)
     data = {'image':b64}
     baseurl = 'https://whatanime.ga/api/search?token={}'.format(token)
     headers ={"content-type":"application/x-www-form-urlencoded; charset=UTF-8"}
