@@ -42,6 +42,8 @@ def fetch_yt_video_info(bot,id):
     url = "https://www.googleapis.com/youtube/v3/videos?key=API_KEY_GOES_HERE&part=contentDetails,status,snippet,statistics&id={0}".format(id)
     results = requests.get(url).json()
     video = results['items'][0]
+    if video['snippet']['liveBroadcastContent'] == 'live':
+        return None, None
     info = {
         'title': video['snippet']['title'],
         'uploader': video['snippet']['channelTitle'],
@@ -113,12 +115,16 @@ def sotd(bot, trigger):
             domain = urlparse(link)
             if(domain.netloc == 'youtu.be' or domain.netloc == 'www.youtu.be'):
                 yt,bksongname = fetch_yt_video_info(bot, domain.path[1:])
+                if yt == None:
+                    return bot.say("Please do not .sotd a live channel")
                 song = yt['title']
-                #bksongname=bksongname+".mp3"
+                bksongname=bksongname+".mp3"
             elif(domain.netloc == 'youtube.com' or domain.netloc == 'www.youtube.com'):
                 yt,bksongname = fetch_yt_video_info(bot, domain.query[2:])
+                if yt == None:
+                    return bot.say("Please do not .sotd a live channel")
                 song = yt['title']
-                #bksongname=bksongname+".mp3"
+                bksongname=bksongname+".mp3"
             elif(domain.netloc == 'soundcloud.com' or domain.netloc == 'www.soundcloud.com'):
                 song,bksongname = soundcloudinfo(link)
             elif(domain.netloc == 'i.sc0tt.net'):
