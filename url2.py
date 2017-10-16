@@ -228,7 +228,7 @@ def find_title(url):
 
     # More cryptic regex substitutions. This one looks to be myano's invention.
     title = re_dcc.sub('', title)
-
+    title = title.replace("[apos]","'")
     return title or None
 
 
