@@ -63,12 +63,13 @@ def nextbday(bot, trigger):
             if c[1].date() == datetime.today().replace(year=1904).date():
                 btoday = "Today is {0} birthday!".format(c[0])
         nname=res[0][0]
+        nnname = res[0][0][:int(len(res[0][0])/2)] + "_" + res[0][0][int(len(res[0][0])/2):]
         nbday=(dict[nname]).strftime('%B %d')
         daysaway=(res[0][1]).days + 1
         if btoday:
-            bot.say("{0} - Next birthday: {1} on {2} ({3} days away)".format(btoday, nname, nbday, daysaway))
+            bot.say("{0} - Next birthday: {1} on {2} ({3} days away)".format(btoday, nnname, nbday, daysaway))
         else:
-            bot.say("Next birthday: {0} on {1} ({2} days away)".format(nname, nbday, daysaway))
+            bot.say("Next birthday: {0} on {1} ({2} days away)".format(nnname, nbday, daysaway))
 
 
 @sopel.module.interval(21600)
