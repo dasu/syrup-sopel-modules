@@ -210,7 +210,14 @@ def get_forecast(bot,trigger,location=None):
         bot.reply("I don't know where that is.")
         error = 'yes'
         return location,forecast, postal, error
-    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
+    units = bot.db.get_nick_value(trigger.nick, 'units')
+    if units.lower() == 'imperial':
+        unit = 'us'
+    elif units.lower() == 'metric':
+        unit = 'si'
+    else:
+        unit = 'auto'
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}'.format(forecastapi,longlat,unit))
     if body:
         result = body.json()['query']['results']['place']
         if result['locality1']:
@@ -385,3 +392,10 @@ def update_woeid(bot, trigger):
         uzip = uzip['content']
     bot.reply('I now have you at WOEID %s (%s%s, %s, %s %s)' %
               (woeid, neighborhood, city, state, country, uzip))
+
+@commands('setunits', 'setunit')
+def update_unit(bot,trigger):
+    if not trigger.group(2):
+        return bot.reply('Choose a unit like "imperial" or "metric".')
+    bot.db.set_nick_value(trigger.nick, 'units', trigger.group(2))
+    bot.reply('Unit Set.')    
