@@ -1,5 +1,6 @@
 # Flexible crypto currency module
-# Created by @sc0tt (https://github.com/sc0tt)
+# Originally created by @sc0tt (https://github.com/sc0tt)
+# Requires api key from worldcoinindex https://www.worldcoinindex.com/apiservice
 import requests
 import sys
 import json
@@ -8,7 +9,7 @@ import sopel
 with open('/home/desu/.sopel/last_prices') as read_file:
   last_prices = json.load(read_file)
 main_coins = ["btc", "bch", "xrp", "eth"]
-single_url = "https://api.bitfinex.com/v1/pubticker/{0}usd"
+single_url = "https://www.worldcoinindex.com/apiservice/json?key=API_KEY"
 
 @sopel.module.rule('^\.({0})$'.format("|".join(main_coins)))
 def crypto_spot(bot, trigger):
@@ -17,30 +18,36 @@ def crypto_spot(bot, trigger):
   from_cur = from_cur.lower()
   if from_cur not in main_coins:
     bot.say("Invalid currency!")
-
-  api_result = requests.get(single_url.format(from_cur)).json()
-
+  api_result = requests.get(single_url).json()
+  for coins in api_result['Markets']:
+    if coins['Label'] == '{}/BTC'.format(trigger.group(1).upper()):
+      price_usd = coins['Price_usd']
+      break
   if from_cur not in last_prices:
     last_prices[from_cur] = 0
   digits = False if from_cur.lower()=='xrp' else True
-  diffStr = getDiffString(float(api_result["last_price"]), last_prices[from_cur], digits)
-  last_prices[from_cur] = float(api_result["last_price"])
+  diffStr = getDiffString(float(price_usd), last_prices[from_cur], digits)
+  last_prices[from_cur] = float(price_usd)
   with open('/home/desu/.sopel/last_prices', 'w') as outfile:
     json.dump(last_prices, outfile)
-  bot.say("{0}: ${1:.{2}f}{3}".format(from_cur, float(api_result["last_price"]), 2 if digits else 4, diffStr))
+  bot.say("{0}: ${1:.{2}f}{3}".format(from_cur, float(price_usd), 2 if digits else 4, diffStr))
 
 @sopel.module.commands('ticker','tick')
 def tick(bot, trigger):
   global last_prices
   results = []
+  api_result = requests.get(single_url).json()
   for coin in main_coins:
-    api_result = requests.get(single_url.format(coin)).json()
+    for coins in api_result['Markets']:
+      if coins['Label'] == '{}/BTC'.format(coin.upper()):
+        price_usd = coins['Price_usd']
+        break
     if coin not in last_prices:
       last_prices[coin] = 0
     digits = False if coin.lower() == 'xrp' else True
-    diffStr = getDiffString(float(api_result["last_price"]), last_prices[coin], digits)
-    last_prices[coin] = float(api_result["last_price"])
-    results.append("{0}: ${1:.{2}f}{3}".format(coin, float(api_result["last_price"]), 2 if digits else 4, diffStr))
+    diffStr = getDiffString(float(price_usd), last_prices[coin], digits)
+    last_prices[coin] = float(price_usd)
+    results.append("{0}: ${1:.{2}f}{3}".format(coin, float(price_usd), 2 if digits else 4, diffStr))
   with open('/home/desu/.sopel/last_prices', 'w') as outfile:
     json.dump(last_prices, outfile)
   bot.say(" | ".join(results))
