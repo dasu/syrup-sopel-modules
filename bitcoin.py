@@ -8,7 +8,7 @@ import sopel
 
 with open('/home/desu/.sopel/last_prices') as read_file:
   last_prices = json.load(read_file)
-main_coins = ["btc", "bch", "xrp", "eth"]
+main_coins = ["btc", "bch", "xrp", "eth", "xlm"]
 single_url = "https://www.worldcoinindex.com/apiservice/json?key=API_KEY"
 
 @sopel.module.rule('^\.({0})$'.format("|".join(main_coins)))
@@ -25,7 +25,7 @@ def crypto_spot(bot, trigger):
       break
   if from_cur not in last_prices:
     last_prices[from_cur] = 0
-  digits = False if from_cur.lower()=='xrp' else True
+  digits = False if from_cur.lower()=='xrp' or from_cur.lower()=='xlm' else True
   diffStr = getDiffString(float(price_usd), last_prices[from_cur], digits)
   last_prices[from_cur] = float(price_usd)
   with open('/home/desu/.sopel/last_prices', 'w') as outfile:
@@ -44,7 +44,7 @@ def tick(bot, trigger):
         break
     if coin not in last_prices:
       last_prices[coin] = 0
-    digits = False if coin.lower() == 'xrp' else True
+    digits = False if coin.lower() == 'xrp' or coin.lower() == 'xlm' else True
     diffStr = getDiffString(float(price_usd), last_prices[coin], digits)
     last_prices[coin] = float(price_usd)
     results.append("{0}: ${1:.{2}f}{3}".format(coin, float(price_usd), 2 if digits else 4, diffStr))
