@@ -16,7 +16,6 @@ forecastapi = '' # https://darksky.net/dev
 gurlapi = '' # https://developers.google.com/url-shortener/v1/getting_started#APIKey
 glocation = '' # https://developers.google.com/maps/documentation/geocoding/get-api-key
 
-
 def geo_lookup(location):
     response = requests.get("https://maps.googleapis.com/maps/api/geocode/json", params={
             "address": location,
@@ -29,7 +28,6 @@ def geo_lookup(location):
             return
     else:
         return
-
 
 def get_short_url(gurl):
     global gurlapi
@@ -202,7 +200,10 @@ def get_forecast(bot,trigger,location=None):
     geo_object = geo_lookup(location)
     geo_loc = geo_object["geometry"]["location"]
     longlat = "{0},{1}".format(geo_loc["lat"], geo_loc["lng"])
-    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
+    units = bot.db.get_nick_value(trigger.nick, 'units')
+    if not units:
+        units = 'auto'
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}'.format(forecastapi,longlat,units))
     location = geo_object["formatted_address"]
     return location, forecast, postal, error
 
@@ -305,7 +306,6 @@ def moon(bot,trigger):
         return
     moon = get_moon(forecast.json()['daily']['data'][0])[1:]
     bot.say(moon)
-    
 
 @commands('setlocation', 'setwoeid')
 @example('.setlocation Columbus, OH')
@@ -340,3 +340,14 @@ def update_woeid(bot, trigger):
         uzip = uzip['content']
     bot.reply('I now have you at WOEID %s (%s%s, %s, %s %s)' %
               (woeid, neighborhood, city, state, country, uzip))
+
+@commands('setunits', 'setunit')
+def update_unit(bot,trigger):
+    if not trigger.group(2):
+        return bot.reply('Choose a unit like "imperial" or "metric".')
+    unit_dict = {'imperial':'us','metric':'si','auto':'auto'}
+    if trigger.group(2).lower() in unit_dict:
+        bot.db.set_nick_value(trigger.nick, 'units', unit_dict[trigger.group(2).lower()])
+        bot.reply('Unit Set.')
+    else:
+        return bot.reply('Use the following values: imperial, metric, auto')
