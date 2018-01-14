@@ -12,8 +12,24 @@ from sopel.module import commands, example, NOLIMIT
 from datetime import datetime
 from pytz import timezone
 
-forecastapi = '' #darksky.net API key.
-gurlapi = '' #google url shortner api key
+forecastapi = ''
+gurlapi = ''
+glocation = '' # https://developers.google.com/maps/documentation/geocoding/get-api-key
+
+
+def geo_lookup(location):
+    response = requests.get("https://maps.googleapis.com/maps/api/geocode/json", params={
+            "address": location,
+            "key": glocation
+        }).json()["results"]
+    if response:
+        if "geometry" in response[0]:
+            return response[0]
+        else:
+            return
+    else:
+        return
+
 
 def get_short_url(gurl):
     global gurlapi
@@ -183,75 +199,11 @@ def get_alert(forecast):
 def get_forecast(bot,trigger,location=None):
     global forecastapi
     forecast,woeid,body,first_result,alert,result,postal,error = '','','','','','','',''
-    if not location:
-        woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
-        if not woeid:
-            bot.msg(trigger.sender, "I don't know where you live. " +
-                           'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
-            error = 'yes'
-            return location, forecast, postal, error
-        body = reversewoeid_search(woeid)
-        result = body.json()['query']['results']['place']
-        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
-    else:
-        location = location.strip()
-        longlat = None
-        woeid = bot.db.get_nick_value(location, 'woeid')
-        if woeid is None:
-            first_result = woeid_search(location)
-            result = first_result.json()['query']['results']['place']
-            if type(result) is list:
-                woeid = 'filler'
-                longlat = result[0]['centroid']['latitude']+","+result[0]['centroid']['longitude']
-            else:
-                woeid = 'filler'
-                longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
-    if not woeid:
-        bot.reply("I don't know where that is.")
-        error = 'yes'
-        return location,forecast, postal, error
-    units = bot.db.get_nick_value(trigger.nick, 'units')
-    if not units:
-        units = 'auto'
-    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}'.format(forecastapi,longlat,units))
-    if body:
-        result = body.json()['query']['results']['place']
-        if result['locality1']:
-            location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-        else:
-            location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-        if result['country']['content'] == 'United States':
-            postal = result['postal']['content'] if result.get('postal') else None
-        else:
-            postal = None
-    else:
-        result = first_result.json()['query']['results']['place']
-        if type(result) is list:
-            if result[0]['locality1']:
-                location = result[0]['locality1']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
-            elif result[0]['admin2']:
-                location = result[0]['admin2']['content'] + ", " + (result[0]['admin1']['code'].split("-")[-1] if result[0]['admin1']['code'] != '' else result[0]['country']['content'])
-            elif result[0]['admin1']:
-                location = result[0]['admin1']['content'] + ", " + result[0]['country']['content']
-            else:
-                location = result[0]['name']
-            if result[0]['country']['content'] == 'United States':
-                postal = result[0]['postal']['content'] if result[0].get('postal') else None
-            else:
-                postal = None
-        else:
-            if result['locality1']:
-                location = result['locality1']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-            elif result['admin2']:
-                location = result['admin2']['content'] + ", " + (result['admin1']['code'].split("-")[-1] if result['admin1']['code'] != '' else result['country']['content'])
-            elif result['admin1']:
-                location = result['admin1']['content'] + ", " + result['country']['content']
-            else:
-                location = result['name']
-            if result['country']['content'] == 'United States':
-                postal = result['postal']['content'] if result.get('postal') else None
-            else:
-                postal = None
+    geo_object = geo_lookup(location)
+    geo_loc = geo_object["geometry"]["location"]
+    longlat = "{0},{1}".format(geo_loc["lat"], geo_loc["lng"])
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units=auto'.format(forecastapi,longlat))
+    location = geo_object["formatted_address"]
     return location, forecast, postal, error
 
 def get_sun(tz, forecast):
@@ -388,14 +340,3 @@ def update_woeid(bot, trigger):
         uzip = uzip['content']
     bot.reply('I now have you at WOEID %s (%s%s, %s, %s %s)' %
               (woeid, neighborhood, city, state, country, uzip))
-
-@commands('setunits', 'setunit')
-def update_unit(bot,trigger):
-    if not trigger.group(2):
-        return bot.reply('Choose a unit like "imperial" or "metric".')
-    unit_dict = {'imperial':'us','metric':'si','auto':'auto'}
-    if trigger.group(2).lower() in unit_dict:
-        bot.db.set_nick_value(trigger.nick, 'units', unit_dict[trigger.group(2).lower()])
-        bot.reply('Unit Set.')
-    else:
-        return bot.reply('Use the following values: imperial, metric, auto')
