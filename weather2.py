@@ -12,8 +12,8 @@ from sopel.module import commands, example, NOLIMIT
 from datetime import datetime
 from pytz import timezone
 
-forecastapi = ''
-gurlapi = ''
+forecastapi = '' # https://darksky.net/dev
+gurlapi = '' # https://developers.google.com/url-shortener/v1/getting_started#APIKey
 glocation = '' # https://developers.google.com/maps/documentation/geocoding/get-api-key
 
 
