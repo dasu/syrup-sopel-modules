@@ -2,6 +2,29 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta, date, timezone
 import sopel
+import re
+
+def GDQdatetime():
+    now = datetime.utcnow()
+    now = now.replace(tzinfo=timezone.utc)
+    try:
+        url = "https://gamesdonequick.com"
+        req = requests.get(url).content
+        bs = BeautifulSoup(req, "html.parser")
+    except:
+        if datetime.now().month >= 6:
+            nextgdqstartest = "Early June"
+        else:
+            nextgdqstartest = "Early January"
+        delta = None
+        return now, delta, nextgdqstartest
+    dtext = bs.h5.findNext("p").text
+    begdtext = re.sub(r' - .*?,',',',dtext)
+    fdtext = re.sub(r'(?<=\d)(st|nd|rd|th)','',begdtext)
+    gdqs = (datetime.strptime(fdtext, "%B %d, %Y")).replace(tzinfo=timezone.utc)
+    delta = gdqs - now
+    nextgdqstartest = fdtext.split(',')[0]
+    return now, delta, nextgdqstartest
 
 def getinfo(run,now):
     schedule = run.find_all('tr',attrs={'class':None})
@@ -41,29 +64,23 @@ def getinfo(run,now):
             nextrunner = 'done'
     return (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment)
 
-
 @sopel.module.commands('gdq','sgdq','agdq')
 def gdq(bot, trigger):
-    now = datetime.utcnow()
-    now = now.replace(tzinfo=timezone.utc)
-    delta = datetime(2018,1,7,16,30,tzinfo=timezone.utc) - now
-    textdate = "January 7"
+    #now = datetime.utcnow()
+    #now = now.replace(tzinfo=timezone.utc)
+    #delta = datetime(2018,1,7,16,30,tzinfo=timezone.utc) - now
+    #textdate = "January 7"
+    now, delta, textdate = GDQdatetime()
     url = 'https://gamesdonequick.com/schedule'
     try:
         x = requests.get(url).content
-    except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
-    bs = BeautifulSoup(x)
-    try:
+        bs = BeautifulSoup(x)
         run = bs.find("table",{"id":"runTable"}).tbody
-    except:
-        return bot.say("GDQ is {0} days away ({1})".format(delta.days, textdate))
-    try:
         gdqstart = datetime.strptime(run.td.getText(), '%Y-%m-%dT%H:%M:%SZ')
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
+        (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
     except:
         return bot.say("GDQ is {0} days away ({1})".format(delta.days, textdate))
-    (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
     if not nextgame:
         return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
     if now < gdqstart:
