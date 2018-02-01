@@ -17,7 +17,7 @@ def hltb(bot,trigger):
     r = session.post(url, headers=test, data=payload)
     if len(r.content) < 250:
         return bot.say("No results.")
-    bs = BeautifulSoup(r.content)
+    bs = BeautifulSoup(r.content, "html.parser")
     first = bs.findAll("div", {"class":"search_list_details"})[0]
     name = first.a.text
     time = first.findAll('div')[3].text
