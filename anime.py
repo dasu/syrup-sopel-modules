@@ -60,7 +60,7 @@ def anime(bot, trigger):
     try:
         urlopen(url)
         data = urlopen(url)
-        soup = BeautifulSoup(data)
+        soup = BeautifulSoup(data, "html.parser")
     except: 
         bot.say('Website is down.')
     days = soup.findAll('div',{"class":re.compile(r'^da.+')})
@@ -71,7 +71,7 @@ def anime(bot, trigger):
         try:
             urlopen(url)
             data = urlopen(url)
-            soup = BeautifulSoup(data)
+            soup = BeautifulSoup(data, "html.parser")
         except:
             bot.say('Website is down.')
         days_nextmonth = soup.findAll('div', {"class":re.compile(r'^da.+')})
