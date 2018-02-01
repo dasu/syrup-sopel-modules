@@ -21,7 +21,7 @@ def gelbooruirc(bot, trigger, match=None):
     id = match.group(2)
     url = "http://gelbooru.com/index.php?page=dapi&s=post&q=index&id={0}".format(id)
     try:
-        bs = BeautifulSoup(requests.get(url).content)
+        bs = BeautifulSoup(requests.get(url).content, "html.parser")
     except:
         return
     image = bs.findAll('post')[0]
@@ -55,7 +55,7 @@ def get_gel_data(terms,pid=None):
     else:
         url = 'http://gelbooru.com/index.php?page=dapi&s=post&q=index&tags={0}'.format(tags)
     try:
-        return BeautifulSoup(requests.get(url).content), tags
+        return BeautifulSoup(requests.get(url).content, "html.parser"), tags
     except:
         return
 
