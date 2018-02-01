@@ -187,7 +187,7 @@ def check_callbacks(bot, trigger, url, run=True):
 def find_title(url):
     """Return the title for the given URL."""
     response = requests.get(url,headers={'User-Agent':'Sopel IRC Syrup'}, stream=True, verify=True)
-    bs = BeautifulSoup(response.content)
+    bs = BeautifulSoup(response.content, "html.parser")
     if bs.find("meta", property="og:title"):
         ogtitle = bs.find("meta", property="og:title")['content']
         #return title
