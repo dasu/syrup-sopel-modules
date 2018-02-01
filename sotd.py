@@ -144,7 +144,7 @@ def sotd(bot, trigger):
                     song = ""
             elif('bandcamp.com' in domain.netloc):
                 try:
-                    bs = BeautifulSoup(requests.get(link).content)
+                    bs = BeautifulSoup(requests.get(link).content, "html.parser")
                     title = bs.findAll('h2', {"class":"trackTitle"})[0].text.strip()
                     artist = bs.findAll('meta', {"itemprop":"name"})[0].get('content')
                     song = "{0} - {1}".format(artist,title)
