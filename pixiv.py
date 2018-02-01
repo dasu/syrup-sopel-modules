@@ -20,7 +20,7 @@ def pixiven(bot,trigger):
     #browser = webdriver.Firefox()
     url = "http://www.pixiv.net/search.php?word="+urllib.request.quote(trigger.group(2))
     bot.memory["pixbrowser"].get(url)
-    bs = BeautifulSoup(bot.memory["pixbrowser"].page_source)
+    bs = BeautifulSoup(bot.memory["pixbrowser"].page_source, "html.parser")
 
     truesearch = bs.find("link", {"rel":"canonical"}).get('href')
     truesearchlink = 'http://www.pixiv.net/'+truesearch
