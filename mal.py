@@ -41,7 +41,7 @@ def malirc(bot, trigger, match=None):
 def connect(url):
     headers = {'Authorization':'BASE64ENCODED USERNAME:PASSWORD GOES HERE'}
     x = requests.get(url,headers=headers).content
-    bs = BeautifulSoup(x)
+    bs = BeautifulSoup(x, "html.parser")
     return (bs, x)
 
 @sopel.module.commands('mal')
