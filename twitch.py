@@ -15,7 +15,7 @@ streamers = [
 "coalll",
 "chouxe",
 "kwlpp",
-"dasusp",
+"dasu_",
 "esicra",
 "agriks",
 "repppie",
