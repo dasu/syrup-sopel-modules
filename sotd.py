@@ -13,6 +13,7 @@ import random
 import string
 import youtube_dl  #you will get .isatty() errors, and the only way I know how to fix this is by removing those checks from youtube_dl
 from nicovideo import Nicovideo
+import os
 #what a mess
 
 def convert_date(date):
@@ -59,15 +60,17 @@ def fetch_yt_video_info(bot,id):
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
+        'max_filesize': 52428800, #50MB
         'outtmpl': '/path/to/songs/folder/{}'.format(bksongname+".%(ext)s"),
         'postprocessors':[{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '128',
         }],
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         x = ydl.download(['http://www.youtube.com/watch?v={}'.format(id)])
+    bksongname=bksongname+".mp3"
     return info, bksongname
 
 def soundcloudinfo(link):
@@ -118,13 +121,15 @@ def sotd(bot, trigger):
                 if yt == None:
                     return bot.say("Please do not .sotd a live channel")
                 song = yt['title']
-                bksongname=bksongname+".mp3"
+                if not os.path.exists("/path/to/songs/folder/{}".format(bksongname)):
+                    bksongname = ""
             elif(domain.netloc == 'youtube.com' or domain.netloc == 'www.youtube.com'):
                 yt,bksongname = fetch_yt_video_info(bot, domain.query[2:])
                 if yt == None:
                     return bot.say("Please do not .sotd a live channel")
                 song = yt['title']
-                bksongname=bksongname+".mp3"
+                if not os.path.exists("/home/desu/htdocs/sotd/songs/{}".format(bksongname)):
+                    bksongname = ""
             elif(domain.netloc == 'soundcloud.com' or domain.netloc == 'www.soundcloud.com'):
                 song,bksongname = soundcloudinfo(link)
             elif(domain.netloc == 'i.sc0tt.net'):
