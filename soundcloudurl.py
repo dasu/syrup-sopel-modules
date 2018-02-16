@@ -33,7 +33,7 @@ def soundcloudirc(bot, trigger, match=None):
         try:
             plays = track.playback_count
         except:
-             plays = "-"
+            plays = "-"
         try:
             favorites = track.favoritings_count
         except:
