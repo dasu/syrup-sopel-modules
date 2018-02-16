@@ -29,8 +29,15 @@ def soundcloudirc(bot, trigger, match=None):
     time = "%02i:%02i" % ( minutes, seconds) if hours is 0 else "%02i:%02i:%02i" % (hours, minutes, seconds)
     genre = track.genre
     if track.kind == 'track':
-        plays = track.playback_count
-        favorites = track.favoritings_count
+    if track.kind == 'track':
+        try:
+            plays = track.playback_count
+        except:
+            plays = "-"
+        try:
+            favorites = track.favoritings_count
+        except:
+            favorites = "-"
         bot.say(u"{0} - {1} [{2}] ►:{3} ❤:{4} {5}".format(artist,title,time,plays,favorites,"Genre: {}".format(genre) if track.genre else ""))
     if track.kind == 'playlist':
         track_count = track.track_count
