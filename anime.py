@@ -9,7 +9,7 @@ def secondstohours(s):
   return round(hours)
 
 def parsedayname(n):
-  if n == 7: n = -1
+  if n == 7: n = 0
   days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
   return days[n]
 
