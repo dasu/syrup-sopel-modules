@@ -1,17 +1,17 @@
 # syrup-sopel-modules
 Modules for syrup.  Mostly updates of the ones in the phenny repo  
 Used to be called syrup-willie-modules  
-Python 3.3
+Python 3.3+
 
 ### Modules descriptions:  
 ##### anime.py
-Checks releases of animes on specified day. Based off https://github.com/infinitylabs/uguubot/blob/master/plugins/anime.py
+Checks releases of animes on specified day. Previously based off https://github.com/infinitylabs/uguubot/blob/master/plugins/anime.py
 ##### animerss.py
 Outputs RSS news from animenewsnetwork, I think the latest commit broke it, so use the one before it.
 ##### bday.py
-Notifies channel when a user has their birthday (every 6 hours on the day of the birthday), or how many days away the next birthday is. refer to data.txt to see how the user's birthdays are suppose to be set up.
+Notifies channel when a user has their birthday (every 6 hours on the day of the birthday), or how many days away the next birthday is. refer to data.txt to see how the user's birthdays are suppose to be set up.  when .bday is used it purposefully breaks a user's name with a \_, as to not HILIGHT them.
 ##### bitcoin.py
-Bitcoin/ETH/XRP module. You can add more memecoins in too. Based off of https://github.com/sc0tt/boredbot-modules/blob/master/bitcoin.py
+Bitcoin/ETH/XRP module. You can add more memecoins in too.  Also tracks some PUBG crates. Based off of https://github.com/sc0tt/boredbot-modules/blob/master/bitcoin.py
 ##### dubtrack.py
 Dubtrack (and plugdj) module.  Dubtrack has a really nice API.  plugdj does not, but whatever.
 ##### edict.py
@@ -55,9 +55,9 @@ Outputs information on soundcloud urls when they're posted to the channel.  Requ
 ##### ssthis.py [inprogress]
 Did someone make an outrageous claim by x date along with 'ss this'? This module will eventually track all those claims and announce back to the channel when the claim's date comes.  Requires wit.ai api key for the natural language processor to get the claim date, and setting up a local mysql db, and an optional web view of it to view claims if you want. 'dow jones 40k by april ss this' -local retard
 ##### steam.py
-Outputs ratings/peak players 24h, price and release date (if coming soon), also works off posted links.
+Outputs ratings/peak players 24h, price (+sales) and release date (if coming soon), also works off posted links.
 ##### stocks.py
-Outputs the dow jones index average, or search your own favourite stocks!  Info comes from finance.google.com, and has a 15 minute stocks delay.
+Outputs the dow jones index average, or search your own favourite stocks!  Requires an alphavantage api key
 ##### sync.py
 Sync module to start a countdown to sync chinese cartoons with your irc friends.  Written by https://github.com/agricola
 ##### traffic.py
