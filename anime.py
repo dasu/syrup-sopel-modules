@@ -16,7 +16,10 @@ def parsedayname(n):
 @sopel.module.commands('release')
 def anime(bot, trigger):
   days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-  f = trigger.group(2).lower()
+  try:
+    f = trigger.group(2).lower()
+  except:
+    pass
   if not trigger.group(2):
     f = 'today'
   now = datetime.now(timezone('Asia/Tokyo')).weekday()
@@ -36,14 +39,22 @@ def anime(bot, trigger):
 
   x = requests.get('http://anichart.net/api/airing', headers=headers).json()
   res = []
+  res2 = []
   if i in days:
     for b in x[i]:
       name = b['title_romaji']
       episode = b['airing']['next_episode']
       countdown = (datetime.fromtimestamp(b['airing']['time'], tz=timezone('Asia/Tokyo')) - now)
-      #airdatetime = datetime.fromtimestamp(b['airing']['time'],tz=timezone('Asia/Tokyo'))
-      res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
-    return bot.say(', '.join(res))
+      if countdown.days <=2 and episode <=100:
+        if len(', '.join(res)) > 375:
+          res2.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+        else:
+          res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+    if res2:
+      bot.say(', '.join(res))
+      return bot.say(', '.join(res2))
+    else:
+      return bot.say(', '.join(res))
   else:
     for d in x:
       for b in x[d]:
@@ -51,5 +62,13 @@ def anime(bot, trigger):
           name = b['title_romaji']
           episode = b['airing']['next_episode']
           countdown = (datetime.fromtimestamp(b['airing']['time'], tz=timezone('Asia/Tokyo')) - now)
-          res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
-    return bot.say(', '.join(res))
+          if episode <=100:
+            if len(', '.join(res)) > 375:
+              res2.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+            else:
+              res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+    if res2:
+      bot.say(', '.join(res))
+      return bot.say(', '.join(res2))
+    else:
+      return bot.say(', '.join(res))
