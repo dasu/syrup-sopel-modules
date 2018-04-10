@@ -45,11 +45,19 @@ def anime(bot, trigger):
       name = b['title_romaji']
       episode = b['airing']['next_episode']
       countdown = (datetime.fromtimestamp(b['airing']['time'], tz=timezone('Asia/Tokyo')) - now)
-      if countdown.days <=2 and episode <=100:
-        if len(', '.join(res)) > 375:
-          res2.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+      if episode <=100:
+        if ((f == 'yesterday') or (f == 'today')) and ((countdown.days >= 5) and (countdown.days <= 8)):
+          countdown = timedelta(days=7) - countdown
+          episode = episode - 1
+          if len(', '.join(res)) > 375:
+            res2.append("\x02{}\x02 Ep.{} [-{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+          else:
+            res.append("\x02{}\x02 Ep.{} [-{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
         else:
-          res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+          if len(', '.join(res)) > 375:
+            res2.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
+          else:
+            res.append("\x02{}\x02 Ep.{} [{}d{}h]".format(name, episode, countdown.days, secondstohours(countdown.seconds)))
     if res2:
       bot.say(', '.join(res))
       return bot.say(', '.join(res2))
