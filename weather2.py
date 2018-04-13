@@ -32,7 +32,7 @@ def geo_lookup(location):
 def get_short_url(gurl):
     global bitlyapi
     short_url_service = 'https://api-ssl.bitly.com/v3/shorten?access_token={}&longUrl={}'.format(bitlyapi,requests.compat.quote_plus(gurl))
-    r = requests.post(short_url_service)
+    r = requests.get(short_url_service)
     return r.json()['data']['url']
 
 def get_temp(forecast):
