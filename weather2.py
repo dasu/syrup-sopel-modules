@@ -192,10 +192,7 @@ def get_forecast(bot,trigger,location=None):
     forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}'.format(forecastapi,longlat,units))
     location = geo_object["formatted_address"]
     if location[-3:] == 'USA':
-      location = location.split(',')
-      if len(location[1]) > 3:
-        location[1] = location[1][:3]
-      location = ','.join(location[:2])
+      location =', '.join([b['short_name'] for b in geo_object['address_components'] if b['types'][0] == 'locality' or b['types'][0] == 'administrative_area_level_1'])
     return location, forecast, error
 
 def get_sun(tz, forecast):
