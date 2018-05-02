@@ -57,7 +57,7 @@ Did someone make an outrageous claim by x date along with 'ss this'? This module
 ##### steam.py
 Outputs ratings/peak players 24h, price (+sales) and release date (if coming soon), also works off posted links.
 ##### stocks.py
-Outputs the dow jones index average, or search your own favourite stocks!  Requires an alphavantage api key
+Outputs the dow jones index average, or search your own favourite stocks!
 ##### sync.py
 Sync module to start a countdown to sync chinese cartoons with your irc friends.  Written by https://github.com/agricola
 ##### traffic.py
@@ -77,6 +77,6 @@ What anime is this module.  input takes a direct image link and checks whatanime
 ##### wafflebot.py
 Markov chain bot created by sc0tt, additional functionality added by me.  Keeps track of all lines said in a channel (greater than 5 words).  You can make it output a line based on all lines side, or output a line based on content that a specific user has said.  After 1000 lines are said in a channel the bot will automatically say a line.  Will try and avoid highlighting users if they are currently in the channel.  Requires redis.  Redis setup process is completely unknown...ask sc0tt?!
 ##### weather2.py
-Modified version of weather.py from sopel's modules.  uses forcast.io to get weather.  Adds weather alerts and a 7 day weather forecast.  Requires forecast.io and google url shortner API keys.
+Modified version of weather.py from sopel's modules.  uses forcast.io to get weather.  Adds weather alerts and a 7 day weather forecast.  Requires forecast.io, google geolocation, and bitly api keys.
 ##### youtoob.py
 Modified youtube.py from https://gist.github.com/calzoneman/b5ee12cf69863bd3fcc3.  Requires youtube API Key. 
