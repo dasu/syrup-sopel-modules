@@ -4,8 +4,7 @@ urbandict.py - urban dictionary module
 author: mutantmonkey <mutantmonkey@mutantmonkey.in>
 """
 
-import sopel.web as web
-import json
+import requests
 import sopel
 
 @sopel.module.commands('urb')
@@ -18,8 +17,7 @@ def urbandict(bot, trigger):
         return bot.say(urbandict.__doc__.strip())
 
     try:
-        data = web.get("http://api.urbandictionary.com/v0/define?term={0}".format(web.quote(word)))
-        data = json.loads(data)
+        data = requests.get("http://api.urbandictionary.com/v0/define?term={0}".format(request.utils.quote(word))).json()
     except:
         return bot.say("Error connecting to urban dictionary")
         
@@ -28,9 +26,9 @@ def urbandict(bot, trigger):
 
     result = data['list'][0]
     url = 'http://www.urbandictionary.com/define.php?term={0}'.format(
-        web.quote(word))
+        request.utils.quote(result['word']))
 
-    response = "{0} - {1}".format(result['definition'].strip()[:256], url)
+    response = "{0} - {1}".format(result['definition'].strip()[:400], url)
     bot.say(response)
 
 if __name__ == '__main__':
