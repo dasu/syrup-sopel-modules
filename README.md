@@ -42,6 +42,8 @@ Pixiv module to search pixiv (jp and en) images.  Warning, this has a higher mem
 A waifu rating module that provides absolutely no value. Don't forget, you're waifu a shit tho.
 ##### remind.py
 A modified remind.py (from sopel's own plugins).  defaults to minutes when entering a number, does not require a message.  Adds a 'LP' unit of time, which is 6 minutes, for love live school idol festival players. 
+##### reversehn.py
+Search for Hacker News discussions by URL.
 ##### search2.py
 A modified search.py (from sopel's own plugins). Mostly changed the UK->US and removed ads from showing up in results.
 ##### shadowverse.py
