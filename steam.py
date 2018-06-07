@@ -44,15 +44,21 @@ def getgameinfo(appid):
         gameinfo['release'] = ''
     return gameinfo
     
-def getaverageplayers24h(appid):
+def getaverageplayers24h(appid, full=False):
     try:
         bs = BeautifulSoup(requests.get("http://steamcharts.com/app/{}".format(appid)).content, "html.parser")
-        players = bs.find_all('div',{'class':'app-stat'})[1].span.text
+        _24h = bs.find_all('div',{'class':'app-stat'})[1].span.text
+        if full:
+            current = bs.find_all('div',{'class':'app-stat'})[0].span.text
+            alltime = bs.find_all('div',{'class':'app-stat'})[2].span.text
     except:
         return ''
-    if players == '0':
-        players = ''
-    return "{:,}".format(int(players)) if players else ''
+    if not full:
+        if _24h == '0':
+            _24 = ''
+        return "{:,}".format(int(_24h)) if _24h else ''
+    else:
+        return current, _24h, alltime
 
 def getreviewdata(appid):
     review = {}
@@ -94,3 +100,16 @@ def steamirc(bot,trigger, match=None):
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
                                             " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
                                             " Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
+
+@sopel.module.commands('steamp','players','steamchart')
+def steamp(bot, trigger):
+    if trigger.group(2):
+        url = "http://store.steampowered.com/search/?term={}".format(trigger.group(2))
+        appid = getsteamappid(url)
+        if not appid:
+            return
+        gameinfo = getgameinfo(appid)
+        current, _24h, alltime = getaverageplayers24h(appid, True)
+        if not current:
+            return
+        bot.say("[{}] Current: {} | 24h: {} | All-Time: {}".format(gameinfo['name'], current, _24h, alltime))
