@@ -8,7 +8,7 @@ from pytz import timezone
 
 @sopel.module.commands("wc")
 def worldcup(bot, trigger):
-  x = requests.get("http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1").json()
+  x = requests.get("http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n2").json()
   now = datetime.datetime.utcnow()
   est = timezone('US/Eastern')
   games = []
@@ -20,9 +20,9 @@ def worldcup(bot, trigger):
     score = None
     starta = None
     if f['status'] == 'TIMED':
-      starth = int((date - now).total_seconds()/60/60) #hours
-      startm = int((date - now).total_seconds()/60) #minutes
-      starta = '{}H{}M away'.format(starth,startm)
+      starth = str(round(((date - now).total_seconds()/60/60),1)) #hours
+      #startm = int((date - now).total_seconds()/60) #minutes
+      starta = '{}H{}M away'.format(starth)
     if f['status'] == 'IN_PLAY':
       score = "{} - {}".format(f['result']['goalsHomeTeam'],f['result']['goalsAwayTeam'])
       start = "LIVE"
