@@ -11,6 +11,7 @@ def GDQdatetime():
         url = "https://gamesdonequick.com"
         req = requests.get(url).content
         bs = BeautifulSoup(req, "html.parser")
+        dtext = bs.h5.findNext("p").text
     except:
         if datetime.now().month >= 6:
             nextgdqstartest = "Early June"
@@ -18,7 +19,6 @@ def GDQdatetime():
             nextgdqstartest = "Early January"
         delta = None
         return now, delta, nextgdqstartest
-    dtext = bs.h5.findNext("p").text
     begdtext = re.sub(r' - .*?,',',',dtext)
     fdtext = re.sub(r'(?<=\d)(st|nd|rd|th)','',begdtext)
     gdqs = (datetime.strptime(fdtext, "%B %d, %Y")).replace(tzinfo=timezone.utc)
