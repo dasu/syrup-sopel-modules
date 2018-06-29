@@ -3,7 +3,7 @@ import json
 import requests
 from datetime import datetime, date
 
-@sopel.module.commands('dji','stocks')
+@sopel.module.commands('dji','stocks','stock')
 def stocks(bot,trigger):
     now = datetime.now()
     nysestart = datetime.time(datetime(1904,1,1,9,45))
