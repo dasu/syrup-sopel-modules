@@ -40,17 +40,3 @@ def futures(bot,trigger):
     futurespoints = str(futures['basicQuote']['priceChange1Day'])
     futurespercent = str(float("{0:.2f}".format(futures['basicQuote']['percentChange1Day'])))
     return bot.say("Dow Jones Index futures: {} ({}/{}) from {}".format(futures['basicQuote']['price'], "\x0304"+futurespoints+"\x0F" if float(futurespoints) < 0 else "\x0303+"+futurespoints+"\x0F", "\x0304"+futurespercent+"%\x0F" if float(futurespercent) < 0 else "\x0303+"+futurespercent+"%\x0F", futures['basicQuote']['previousClosingPriceOneTradingDayAgo']))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
