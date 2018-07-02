@@ -13,10 +13,10 @@ def GDQdatetime():
         bs = BeautifulSoup(req, "html.parser")
         dtext = bs.h5.findNext("p").text
     except:
-        if datetime.now().month >= 6:
-            nextgdqstartest = "Early June"
-        else:
+        if datetime.now().month >= 5:
             nextgdqstartest = "Early January"
+        else:
+            nextgdqstartest = "Early June"
         delta = None
         return now, delta, nextgdqstartest
     begdtext = re.sub(r' - .*?,',',',dtext)
@@ -80,8 +80,12 @@ def gdq(bot, trigger):
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
         (game, runner, console, comment, eta, nextgame, nextrunner, nexteta, nextconsole, nextcomment) = getinfo(run,now)
     except:
+        if not delta:
+            return bot.say("Next GDQ: {}".format(textdate))
         return bot.say("GDQ is {0} days away ({1})".format(delta.days, textdate))
     if not nextgame:
+        if not delta:
+            return bot.say("Next GDQ: {}".format(textdate))
         return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
     if now < gdqstart:
         tts = gdqstart - now
