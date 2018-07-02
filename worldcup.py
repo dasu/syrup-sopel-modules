@@ -1,5 +1,3 @@
-#this is currently in progress
-
 import sopel
 import datetime
 import requests
@@ -22,10 +20,17 @@ def worldcup(bot, trigger):
     if f['status'] == 'TIMED':
       starth = str(round(((date - now).total_seconds()/60/60),1)) #hours
       #startm = int((date - now).total_seconds()/60) #minutes
-      starta = '{}H{}M away'.format(starth)
+      starta = '{}H away'.format(starth)
     if f['status'] == 'IN_PLAY':
-      score = "{} - {}".format(f['result']['goalsHomeTeam'],f['result']['goalsAwayTeam'])
+      if f['result'].get('penalty'):
+        score = "{} ({}) - {} ({})".format(f['result']['goalsHomeTeam'],f['result']['penalty']['goalsHomeTeam'],f['result']['goalsAwayTeam'],f['result']['penalty']['goalsAwayTeam'])
+      else:
+        score = "{} - {}".format(f['result']['goalsHomeTeam'],f['result']['goalsAwayTeam'])
       start = "LIVE"
+    if f['status'] == 'FINISHED':
+      if f['result'].get('penalty'):
+        score = "{} ({}) - {} ({})".format(f['result']['goalsHomeTeam'],f['result']['penalty']['goalsHomeTeam'],f['result']['goalsAwayTeam'],f['result']['penalty']['goalsAwayTeam'])
+      else:
+        score = "{} - {}".format(f['result']['goalsHomeTeam'],f['result']['goalsAwayTeam'])
     games.append("{} [{}]{}".format(game,"{} | {}".format(start,starta) if starta else start, " {}".format(score) if score else ""))
-
   bot.say(", ".join(games))
