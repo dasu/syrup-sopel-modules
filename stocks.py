@@ -1,9 +1,14 @@
+
 import sopel
 import json
 import requests
-from datetime import datetime, date
+from datetime import datetime
 
-@sopel.module.commands('dji','stocks','stock')
+def symbol_lookup(symb):
+    s = requests.get("http://d.yimg.com/aq/autoc?query={}&region=US&lang=en-US".format(symb)).json()
+    return s['ResultSet']['Result'][0]['name']
+
+@sopel.module.commands('dji','stocks')
 def stocks(bot,trigger):
     now = datetime.now()
     nysestart = datetime.time(datetime(1904,1,1,9,45))
@@ -15,20 +20,19 @@ def stocks(bot,trigger):
             futurespercent = str(float("{0:.2f}".format(futures['basicQuote']['percentChange1Day'])))
             return bot.say("Dow Jones Index futures: {} ({}/{}) from {}".format(futures['basicQuote']['price'], "\x0304"+futurespoints+"\x0F" if float(futurespoints) < 0 else "\x0303+"+futurespoints+"\x0F", "\x0304"+futurespercent+"%\x0F" if float(futurespercent) < 0 else "\x0303+"+futurespercent+"%\x0F", futures['basicQuote']['previousClosingPriceOneTradingDayAgo']))
         else:
-            x = requests.get("https://www.bloomberg.com/markets/api/quote-page/INDU:IND")
+            x = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=^DJI&interval=1min&apikey=APIKEYGOESHERELOL")
     else:
-        x = requests.get("https://www.bloomberg.com/markets/api/quote-page/{}:US".format(trigger.group(2)))
-    if x.json()['securityType'] == 'UNKNOWN':
-        return bot.say("Please enter a valid stock symbol.")
+        x = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={}&interval=1min&apikey=APIKEYGOESHERELOL".format(trigger.group(2)))
     if trigger.group(2):
-        name = x.json()['basicQuote']['name']
+        name = symbol_lookup(trigger.group(2))
     else:
         name = "Dow Jones Index"
-    start = x.json()['basicQuote']['openPrice']
-    current = x.json()['basicQuote']['price']
-    change = x.json()['basicQuote']['priceChange1Day']
-    percent = "{0:.2f}".format(x.json()['basicQuote']['percentChange1Day'])
-    return bot.say("{0}: {1} ({2}/{3}) from {4}".format(name,current,"\x0304"+str(change)+"\x0F" if change < 0 else "\x0303"+str(change)+"\x0F","\x0304"+percent+"%\x0F" if change < 0 else "\x0303+"+percent+"%\x0F",start))
+    dates = sorted(x.json()['Time Series (Daily)'].keys(), reverse=True)
+    start = '{0:.2f}'.format(float(x.json()['Time Series (Daily)'][dates[1]]['4. close']))
+    current = '{0:.2f}'.format(float(x.json()['Time Series (Daily)'][dates[0]]['4. close']))
+    change = '{0:.2f}'.format(float(current) - float(start))
+    percent = '{0:.2f}'.format((float(change) / float(start))*100)
+    return bot.say("{0}: {1} ({2}/{3}) from {4}".format(name,current,"\x0304"+change+"\x0F" if float(change) < 0 else "\x0303"+change+"\x0F","\x0304"+percent+"%\x0F" if float(percent) < 0 else "\x0303+"+percent+"%\x0F",start))
 
 @sopel.module.commands('futures')
 def futures(bot,trigger):
@@ -36,3 +40,17 @@ def futures(bot,trigger):
     futurespoints = str(futures['basicQuote']['priceChange1Day'])
     futurespercent = str(float("{0:.2f}".format(futures['basicQuote']['percentChange1Day'])))
     return bot.say("Dow Jones Index futures: {} ({}/{}) from {}".format(futures['basicQuote']['price'], "\x0304"+futurespoints+"\x0F" if float(futurespoints) < 0 else "\x0303+"+futurespoints+"\x0F", "\x0304"+futurespercent+"%\x0F" if float(futurespercent) < 0 else "\x0303+"+futurespercent+"%\x0F", futures['basicQuote']['previousClosingPriceOneTradingDayAgo']))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
