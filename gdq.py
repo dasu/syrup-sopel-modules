@@ -21,9 +21,13 @@ def GDQdatetime():
         return now, delta, nextgdqstartest
     begdtext = re.sub(r' - .*?,',',',dtext)
     fdtext = re.sub(r'(?<=\d)(st|nd|rd|th)','',begdtext)
-    gdqs = (datetime.strptime(fdtext, "%B %d, %Y")).replace(tzinfo=timezone.utc)
-    delta = gdqs - now
-    nextgdqstartest = fdtext.split(',')[0]
+    try:
+        gdqs = (datetime.strptime(fdtext, "%B %d, %Y")).replace(tzinfo=timezone.utc)
+        delta = gdqs - now
+        nextgdqstartest = fdtext.split(',')[0]
+    except:
+        nextgdqstartest = fdtext
+        delta = None
     return now, delta, nextgdqstartest
 
 def getinfo(run,now):
