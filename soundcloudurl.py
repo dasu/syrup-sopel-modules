@@ -29,7 +29,6 @@ def soundcloudirc(bot, trigger, match=None):
     time = "%02i:%02i" % ( minutes, seconds) if hours is 0 else "%02i:%02i:%02i" % (hours, minutes, seconds)
     genre = track.genre
     if track.kind == 'track':
-    if track.kind == 'track':
         try:
             plays = track.playback_count
         except:
