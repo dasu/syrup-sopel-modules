@@ -42,16 +42,19 @@ hstreamers = [
 
 twitchregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 mixerregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
+twitchclipsregex = re.compile('(?!.*\/v\/).*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = SopelMemory()
     bot.memory['url_callbacks'][twitchregex] = twitchirc
     bot.memory['url_callbacks'][mixerregex] = mixerirc
+    bot.memory['url_callbacks'][twitchclipsregex] = twitchclipsirc
 
 def shutdown(bot):
     del bot.memory['url_callbacks'][twitchregex]
     del bot.memory['url_callbacks'][mixerregex]
+    del bot.memory['url_callbacks'][twitchclipsregex]
 
 currently_streaming = {}
 currently_hstreaming = {}
@@ -273,6 +276,16 @@ def mixerirc(bot, trigger, match = None):
     bot.say(", ".join(results))
   else:
     pass
+
+@sopel.module.rule('(?!.*\/v\/).*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+def twitchclipsirc(bot,trigger, match = None):
+  match = match or trigger
+  clips = requests.get("https://api.twitch.tv/kraken/clips/{}".format(match.group(1)), headers={"Client-ID":twitchclientid,"Accept":"application/vnd.twitchtv.v5+json"}).json()
+  name = clips['broadcaster']['display_name']
+  title = clips['title']
+  game = clips['game']
+  views = clips['views']
+  bot.say("{} [{}] | {} | {} views".format(title, game, name, views))
 
 @sopel.module.commands('debugtv')
 def debug(bot, trigger):
