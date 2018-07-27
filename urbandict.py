@@ -3,7 +3,6 @@
 urbandict.py - urban dictionary module
 author: mutantmonkey <mutantmonkey@mutantmonkey.in>
 """
-
 import requests
 import sopel
 
@@ -15,20 +14,18 @@ def urbandict(bot, trigger):
     word = trigger.group(2)
     if not word:
         return bot.say(urbandict.__doc__.strip())
-
     try:
-        data = requests.get("http://api.urbandictionary.com/v0/define?term={0}".format(request.utils.quote(word))).json()
+        data = requests.get("http://api.urbandictionary.com/v0/define?term={0}".format(requests.utils.quote(word))).json()
     except:
         return bot.say("Error connecting to urban dictionary")
-        
-    if data['result_type'] == 'no_results':
-        return bot.say("No results found for {0}".format(word))
 
-    result = data['list'][0]
-    url = 'http://www.urbandictionary.com/define.php?term={0}'.format(
-        requests.utils.quote(result['word']))
+    if not data['list']:
+         return bot.say("No results found for {0}".format(word))
 
-    response = "{0} - {1}".format(result['definition'].strip()[:400], url)
+    result = list(filter(lambda x: x['word'].lower() == word.lower(), data['list']))[0]
+    url = 'http://{}.urbanup.com'.format(word.replace(' ','-'))
+    maxdesc = 420 - len(url)
+    response = "{0} - {1}".format((result['definition'].replace("[","").replace("]","").strip()[:maxdesc])+"...", url)
     bot.say(response)
 
 if __name__ == '__main__':
