@@ -20,9 +20,11 @@ def urbandict(bot, trigger):
         return bot.say("Error connecting to urban dictionary")
 
     if not data['list']:
-         return bot.say("No results found for {0}".format(word))
-
-    result = list(filter(lambda x: x['word'].lower() == word.lower(), data['list']))[0]
+        return bot.say("No results found for {0}".format(word))
+    try:
+        result = list(filter(lambda x: x['word'].lower() == word.lower(), data['list']))[0]
+    except:
+        return bot.say("No results found for {0}".format(word))
     url = 'http://{}.urbanup.com'.format(word.replace(' ','-'))
     maxdesc = 420 - len(url)
     response = "{0} - {1}".format((result['definition'].replace("[","").replace("]","").strip()[:maxdesc])+"...", url)
