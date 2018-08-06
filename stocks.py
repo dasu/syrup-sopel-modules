@@ -11,6 +11,8 @@ def stocks(bot,trigger):
         x = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=^DJI&interval=1min&apikey=APIKEYGOESHERELOL")
     else:
         x = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={}&interval=1min&apikey=APIKEYGOESHERELOL".format(trigger.group(2)))
+    if x.json().get('Error Message'):
+        return bot.say('Please enter a valid stock symbol')
     if trigger.group(2):
         name = symbol_lookup(trigger.group(2))
     else:
