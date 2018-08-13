@@ -110,7 +110,10 @@ def steamp(bot, trigger):
         if not appid:
             return
         gameinfo = getgameinfo(appid)
-        current, _24h, alltime = getaverageplayers24h(appid, True)
+        try:
+            current, _24h, alltime = getaverageplayers24h(appid, True)
+        except:
+            return bot.say("Not a valid video game.")
         if not current:
             return
         bot.say("[{}] Current: {} | 24h: {} | All-Time: {}".format(gameinfo['name'], current, _24h, alltime))
