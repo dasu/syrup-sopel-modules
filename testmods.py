@@ -90,11 +90,18 @@ def zfg(bot, trigger):
     imgdata = capture.read()[1]
     i = imgdata[...,::-1]
     fc = cv2.cvtColor(i, cv2.COLOR_RGB2BGR)
-    cv2.imwrite('/home/desu/htdocs/desu/zfg/captured_frame.jpg', fc)
-
+    cv2.imwrite('/home/desu/htdocs/desu/zfg/captured_frame.png', fc)
+    psplit_crop = fc[310:330, 270:330]
+    cv2.imwrite('/home/desu/htdocs/desu/zfg/psplit_crop.png', psplit_crop)
+    psplit_prep = cv2.cvtColor(psplit_crop, cv2.COLOR_BGR2GRAY)
+    psplit_prep = cv2.threshold(psplit_prep, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    rows, cols = psplit_prep.shape
+    psplit_r = cv2.resize(psplit_prep, (int(cols*4), int(rows*4)))
+    psplit_string = pytesseract.image_to_string(psplit_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
     timer_crop = fc[427:465, 179:331]
-    cv2.imwrite('/home/desu/htdocs/desu/zfg/timer_crop.jpg', timer_crop)
+    cv2.imwrite('/home/desu/htdocs/desu/zfg/timer_crop.png', timer_crop)
     rows, cols,_ = timer_crop.shape
     tc_r = cv2.resize(timer_crop, (int(cols*4), int(rows*4)))
-    timer_string = pytesseract.image_to_string(tc_r)
-    bot.say("Time: {} | Estimated time to Dampe: {} | Images: https://dasu.moe/desu/zfg/".format(timer_string, "Not Implemented Yet"))
+    timer_string = pytesseract.image_to_string(tc_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
+    bot.say("Time: {} ({} PB) | Estimated time to Dampe: {} | Images: https://dasu.moe/desu/zfg/ | https://twitch.tv/zfg1 ".format(timer_string, "\x0303"+psplit_string+"\x0F" if psplit_string.startswith('-') else "\x0304"+psplit_string+"\x0F" , "TODO"))
+    
