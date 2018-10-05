@@ -8,6 +8,7 @@ import re
 import streamlink
 import cv2
 import pytesseract
+import datetime
 #endzfg
 
 ssthisregex = re.compile('.*\W(?:ss|screenshot) this.*')
@@ -98,10 +99,54 @@ def zfg(bot, trigger):
     rows, cols = psplit_prep.shape
     psplit_r = cv2.resize(psplit_prep, (int(cols*4), int(rows*4)))
     psplit_string = pytesseract.image_to_string(psplit_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
+    if (psplit_string[0] != '-') and (psplit_string[0] != '+'):
+        psplit_string = "\x0F-\x0F"
     timer_crop = fc[427:465, 179:331]
     cv2.imwrite('/home/desu/htdocs/desu/zfg/timer_crop.png', timer_crop)
     rows, cols,_ = timer_crop.shape
     tc_r = cv2.resize(timer_crop, (int(cols*4), int(rows*4)))
     timer_string = pytesseract.image_to_string(tc_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
-    bot.say("Time: {} ({} PB) | Estimated time to Dampe: {} | Images: https://dasu.moe/desu/zfg/ | https://twitch.tv/zfg1 ".format(timer_string, "\x0303"+psplit_string+"\x0F" if psplit_string.startswith('-') else "\x0304"+psplit_string+"\x0F" , "TODO"))
-    
+    if psplit_string != "\x0F-\x0F":
+        psplit_td, psplitsign = parse_timer(psplit_string)
+        timer_td, timersign = parse_timer(timer_string)
+        dampe = datetime.timedelta(hours=1, minutes=45, seconds=0)
+        ttd_s = (timer_td.total_seconds() - (dampe.total_seconds() - psplit_td.total_seconds())) if not psplitsign else (timer_td.total_seconds() - (dampe.total_seconds() + psplit_td.total_seconds()))
+        ttd = secondstotimer(ttd_s)
+        if not ttd.startswith('-'):
+            ttd = "Already passed"
+    else:
+        ttd = "-1:45:00" #just show this for the first 12~ minutes of a run
+    bot.say("Time: {} ({} PB) | Est. time to Dampe: {} | Images: https://dasu.moe/desu/zfg/ | https://twitch.tv/zfg1 ".format(timer_string, "\x0303"+psplit_string.replace(' ','')+"\x0F" if psplit_string.startswith('-') else "\x0304"+psplit_string.replace(' ','')+"\x0F" , ttd))
+
+def parse_timer(time):
+    time = time.strip()
+    if time.startswith('-'):
+        sign = False
+    elif time.startswith('+'):
+        sign = True
+    else:
+        sign = None
+    if sign is not None:
+        time = time[1:]
+    if ":" in time:
+        if time.count(':') == 2:
+            ptime = datetime.datetime.strptime(time, "%H:%M:%S{}".format(".%f" if sign == None else ""))
+            tdtime = datetime.timedelta(hours=ptime.hour, minutes=ptime.minute, seconds=ptime.second, microseconds=ptime.microsecond)
+        else:
+            ptime = datetime.datetime.strptime(time, "%M:%S{}".format(".%f" if sign == None else  ""))
+            tdtime = datetime.timedelta(minutes=ptime.minute, seconds=ptime.second, microseconds=ptime.microsecond)
+    else:
+        ptime = datetime.datetime.strptime(time, "%S.%f")
+        tdtime = datetime.timedelta(seconds=ptime.second, microseconds=ptime.microsecond)
+    return tdtime, sign
+
+def secondstotimer(seconds):
+    if seconds < 0:
+        negative = True
+    else:
+        negative = False
+    timer = str(datetime.timedelta(seconds=int(abs(seconds))))
+    if negative:
+        return "-{}".format(timer)
+    else:
+        return "{}".format(timer)
