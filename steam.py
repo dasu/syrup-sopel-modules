@@ -16,7 +16,7 @@ def shutdown(bot):
 def getsteamappid(url):
     try:
         bs = BeautifulSoup(requests.get(url).content, "html.parser")
-        appid = bs.find_all('a', {'class':'search_result_row'})[0]['data-ds-appid']
+        appid = bs.find_all('a', {'class':'match ds_collapse_flag '})[0]['data-ds-appid']
     except:
         appid = None
     return appid
@@ -75,7 +75,7 @@ def getreviewdata(appid):
 @sopel.module.commands('steam')
 def steam(bot,trigger):
     if trigger.group(2):
-        url = "http://store.steampowered.com/search/?term={}".format(trigger.group(2))
+        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(trigger.group(2))
         appid = getsteamappid(url)
         if not appid:
             return
@@ -105,7 +105,7 @@ def steamirc(bot,trigger, match=None):
 @sopel.module.commands('steamp','players','steamchart')
 def steamp(bot, trigger):
     if trigger.group(2):
-        url = "http://store.steampowered.com/search/?term={}".format(trigger.group(2))
+        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(trigger.group(2))
         appid = getsteamappid(url)
         if not appid:
             return
