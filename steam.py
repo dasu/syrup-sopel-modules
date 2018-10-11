@@ -13,12 +13,18 @@ def setup(bot):
 def shutdown(bot):
     del bot.memory['url_callbacks'][steamregex]
 
-def getsteamappid(url):
+def getsteamappid(game):
     try:
+        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(game)
         bs = BeautifulSoup(requests.get(url).content, "html.parser")
         appid = bs.find_all('a', {'class':'match ds_collapse_flag '})[0]['data-ds-appid']
     except:
-        appid = None
+        try:
+            url = "http://store.steampowered.com/search/?term={}".format(game)
+            bs = BeautifulSoup(requests.get(url).content, "html.parser")
+            appid = bs.find_all('a', {'class':'search_result_row'})[0]['data-ds-appid']
+        except:
+            appid = None
     return appid
 
 def getgameinfo(appid):
@@ -75,8 +81,7 @@ def getreviewdata(appid):
 @sopel.module.commands('steam')
 def steam(bot,trigger):
     if trigger.group(2):
-        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(trigger.group(2))
-        appid = getsteamappid(url)
+        appid = getsteamappid(trigger.group(2))
         if not appid:
             return
         gameinfo = getgameinfo(appid)
@@ -105,8 +110,7 @@ def steamirc(bot,trigger, match=None):
 @sopel.module.commands('steamp','players','steamchart')
 def steamp(bot, trigger):
     if trigger.group(2):
-        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(trigger.group(2))
-        appid = getsteamappid(url)
+        appid = getsteamappid(trigger.group(2))
         if not appid:
             return
         gameinfo = getgameinfo(appid)
