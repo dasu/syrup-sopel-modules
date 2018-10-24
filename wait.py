@@ -6,7 +6,7 @@ from io import BytesIO
 import sys
 
 expire = 0
-token = '' #api token for whatanime.ga, instruction to get one: https://soruly.github.io/whatanime.ga/ 
+token = '' #api token for trace.moe, instruction to get one: https://soruly.github.io/trace.moe/ #2018-10-24 addendum: may not be necessary anymore
 
 def check_image(imgurl):
     try:
@@ -43,12 +43,12 @@ def wait(bot,trigger):
         with open("/tmp/temp.jpg", "rb") as img_tmp:
             b64 = base64.b64encode(img_tmp.read())
     data = {'image':b64}
-    baseurl = 'https://whatanime.ga/api/search?token={}'.format(token)
+    baseurl = 'https://trace.moe/api/search' #?token={}'.format(token)
     headers ={"content-type":"application/x-www-form-urlencoded; charset=UTF-8"}
     try:
         req = requests.post(baseurl, data=data, headers=headers)
     except:
-        return bot.say("Whatanime.ga may be down")
+        return bot.say("trace.moe may be down")
     if req.ok:
         try:
             if req.json()['quota'] == 0:
@@ -58,14 +58,9 @@ def wait(bot,trigger):
                 animu_rom = req.json()['docs'][0]['title_romaji']
                 animu_title = req.json()['docs'][0]['title']
                 season = req.json()['docs'][0]['season']
-                #if animu_title == animu_eng: 
-                #    season = req.json()['docs'][0]['season']
-                #    req2 = requests.get("https://whatanime.ga/info?season={}&anime={}".format(season,animu_title))
-                #    animu_eng = req2.json()[0]['title_english']
-                #    animu_rom = req2.json()[0]['title_romaji']
                 accuracy = round(req.json()['docs'][0]['similarity'] * 100,2)
                 episode = req.json()['docs'][0]['episode']
-                return bot.say("{} [{}] Episode:{} Confidence: {}% | https://whatanime.ga/?url={}".format(animu_eng, animu_rom, episode, accuracy, imageurl))
+                return bot.say("{} [{}] Episode:{} Confidence: {}% | https://trace.moe/?url={}".format(animu_eng, animu_rom, episode, accuracy, imageurl))
             else:
                 return bot.say("No results.")
         except:
@@ -74,8 +69,8 @@ def wait(bot,trigger):
         return bot.say("File too large, try a smaller file. (<1MB?)")
     elif req.status_code == 429:
         if expire:
-            return bot.say("Quota reached, wait {} seconds, or check https://whatanime.ga/?url={0}".format(expire,imageurl))
+            return bot.say("Quota reached, wait {} seconds, or check https://trace.moe/?url={0}".format(expire,imageurl))
         else:
-            return bot.say("Quota reached... Check https://whatanime.ga/?url={0}".format(imageurl))
+            return bot.say("Quota reached... Check https://trace.moe/?url={0}".format(imageurl))
     else:
         return bot.say("Unknown error. ({})".format(req.status_code))
