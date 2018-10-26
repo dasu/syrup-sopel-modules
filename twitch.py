@@ -163,10 +163,11 @@ def mixerirc(bot, trigger, match = None):
   else:
     pass
 
-@sopel.module.rule('(?!.*\/v\/).*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+@sopel.module.rule('.*(?:https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$))|(?:https?:\/\/(?:www)?\.twitch\.tv\/.*?\/clip\/(.*?)\/?(?:(?=[\s])|$))')
 def twitchclipsirc(bot,trigger, match = None):
   match = match or trigger
-  clips = requests.get("https://api.twitch.tv/kraken/clips/{}".format(match.group(1)), headers={"Client-ID":twitchclientid,"Accept":"application/vnd.twitchtv.v5+json"}).json()
+  slug = match.group(1) or match.group(2)
+  clips = requests.get("https://api.twitch.tv/kraken/clips/{}".format(slug), headers={"Client-ID":twitchclientid,"Accept":"application/vnd.twitchtv.v5+json"}).json()
   name = clips['broadcaster']['display_name']
   title = clips['title']
   game = clips['game']
