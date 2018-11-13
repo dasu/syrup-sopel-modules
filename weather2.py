@@ -15,6 +15,7 @@ from pytz import timezone
 forecastapi = '' # https://darksky.net/dev
 glocation = '' # https://developers.google.com/maps/documentation/geocoding/get-api-key
 bitlyapi = '' # http://dev.bitly.com/get_started.html  ##using the generic access token and not Oauth2, make sure to create an actual account and not use gmail login, or things get weird on their website
+aqapi = '' #https://www.airnowapi.org/
 
 def geo_lookup(location):
     response = requests.get("https://maps.googleapis.com/maps/api/geocode/json", params={
@@ -318,3 +319,28 @@ def update_unit(bot,trigger):
         bot.reply('Unit Set.')
     else:
         return bot.reply('Use the following values: imperial, metric, auto')
+
+@commands('aq', 'aqi', 'air')
+def airquality(bot, trigger):
+  global aqapi
+  location = trigger.group(2)
+  if not location:
+    wloc = bot.db.get_nick_value(trigger.nick, 'wloc')
+    if not wloc:
+      return bot.msg(trigger.sender, "I don't know where you live.  Give me a location, like .aq London, or tell me where you live by saying .setlocation London, for example.")
+    geo_object = geo_lookup(wloc)
+    geo_loc = geo_object["geometry"]["location"]
+    latlong = "&latitude={}&longitude={}".format(geo_loc["lat"],geo_loc["lng"])
+  else:
+    geo_object = geo_lookup(location)
+    if not geo_object:
+      return bot.reply("I don't know what that is.")
+    geo_loc = geo_object["geometry"]["location"]
+    latlong = "&latitude={}&longitude={}".format(geo_loc["lat"],geo_loc["lng"])
+  location = geo_object["formatted_address"]
+  results = requests.get("http://www.airnowapi.org/aq/observation/latLong/current/?format=application/json{}&distance=100&API_KEY={}".format(latlong, aqapi)).json()
+  if not results:
+    return bot.say("No monitoring stations with 100 miles.")
+  ozone = "{} [{}]".format(results[0]['AQI'], results[0]['Category']['Name'])
+  pm = "{} [{}]".format(results[1]['AQI'], results[1]['Category']['Name'])
+  return bot.say("{} Air Quality: O3 (ozone): {} | PM2.5 (particles): {}".format(location, ozone, pm))
