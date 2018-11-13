@@ -98,17 +98,26 @@ def zfg(bot, trigger):
     psplit_prep = cv2.threshold(psplit_prep, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     rows, cols = psplit_prep.shape
     psplit_r = cv2.resize(psplit_prep, (int(cols*4), int(rows*4)))
-    psplit_string = pytesseract.image_to_string(psplit_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
+    psplit_string = pytesseract.image_to_string(psplit_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789').replace(" ","")
     if (psplit_string[0] != '-') and (psplit_string[0] != '+'):
         psplit_string = "\x0F-\x0F"
     timer_crop = fc[427:465, 179:331]
     cv2.imwrite('/home/desu/htdocs/desu/zfg/timer_crop.png', timer_crop)
     rows, cols,_ = timer_crop.shape
     tc_r = cv2.resize(timer_crop, (int(cols*4), int(rows*4)))
-    timer_string = pytesseract.image_to_string(tc_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789')
+    timer_string = pytesseract.image_to_string(tc_r, config='-psm 7 -c tessedit_char_whitelist=.+-:0123456789').replace(" ","")
     if psplit_string != "\x0F-\x0F":
-        psplit_td, psplitsign = parse_timer(psplit_string)
-        timer_td, timersign = parse_timer(timer_string)
+        try:
+            psplit_td, psplitsign = parse_timer(psplit_string)
+            timer_td, timersign = parse_timer(timer_string)
+        except ValueError as err:
+            now = datetime.datetime.now().isoformat()
+            cv2.imwrite('/home/desu/htdocs/desu/zfg/errors/captured_frame_{}.png'.format(now), fc)
+            cv2.imwrite('/home/desu/htdocs/desu/zfg/errors/psplit_crop_{}.png'.format(now), psplit_crop)
+            cv2.imwrite('/home/desu/htdocs/desu/zfg/errors/psplit_r_{}.png'.format(now), psplit_r)
+            cv2.imwrite('/home/desu/htdocs/desu/zfg/errors/timer_crop_{}.png'.format(now), timer_crop)
+            cv2.imwrite('/home/desu/htdocs/desu/zfg/errors/tc_r_{}.png'.format(now), tc_r)
+            return bot.say("Timer parsing error, error:{} ... try again in a bit. https://dasu.moe/desu/zfg/".format(err))
         dampe = datetime.timedelta(hours=1, minutes=45, seconds=0)
         ttd_s = (timer_td.total_seconds() - (dampe.total_seconds() - psplit_td.total_seconds())) if not psplitsign else (timer_td.total_seconds() - (dampe.total_seconds() + psplit_td.total_seconds()))
         ttd = secondstotimer(ttd_s)
