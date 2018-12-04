@@ -77,3 +77,7 @@ def rather(bot, trigger):
 @sopel.module.commands('hitormiss')
 def hitormiss(bot, trigger):
   bot.say("https://www.youtube.com/watch?v=gVEdQJ7qtJw")
+
+@sopel.module.commands('friday')
+def friday(bot, trigger):
+  bot.say("https://pbs.twimg.com/media/DlWjWfzXgAINgGC.jpg")
