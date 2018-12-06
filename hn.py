@@ -2,6 +2,7 @@ import sopel
 import requests
 from sopel.tools import SopelMemory
 import re
+import html #python3.5+
 
 hnregex = re.compile('.*https?:\/\/news\.ycombinator.com\/item\?id=(\d{1,15}).*?((?=[\s])|$)')
 
@@ -28,4 +29,7 @@ def rhn(bot, trigger):
 def hnirc(bot, trigger, match=None):
     match = match or trigger
     x = requests.get('https://hacker-news.firebaseio.com/v0/item/{}.json'.format(match.group(1))).json()
-    bot.say('{}{} | Score: {} | Comments: {}'.format("[DEAD] "if x.get('dead') else '', x['title'], x['score'], x.get('descendants') or '0'))
+    if x['type'] == 'comment':
+        bot.say('[HN Comment] {}'.format(html.unescape(x['text'])))
+    else:
+        bot.say('{}{} | Score: {} | Comments: {}'.format("[DEAD] "if x.get('dead') else '', x['title'], x['score'], x.get('descendants') or '0'))
