@@ -48,6 +48,7 @@ def shutdown(bot):
 
 currently_streaming = {}
 currently_ystreaming = {}
+tsep = lambda a : "{:,}".format(int(a))
 
 @sopel.module.interval(20)
 def monitor_streamers(bot):
@@ -72,7 +73,7 @@ def monitor_streamers(bot):
                                                                           streamer_game, 
                                                                           streamer_status,
                                                                           streamer_url, 
-                                                                          streamer_viewers, 
+                                                                          tsep(streamer_viewers), 
                                                                           "s" if streamer_viewers != 1 else ""))
       streaming_names.append(streamer_name)
 
@@ -107,7 +108,7 @@ def streamer_status(bot, trigger):
                                                            streamer_game, 
                                                            streamer_status,
                                                            streamer_url, 
-                                                           streamer_viewers, 
+                                                           tsep(streamer_viewers), 
                                                            "s" if streamer_viewers != 1 else "" ))
   if results:
     bot.say(", ".join(results))
@@ -131,7 +132,7 @@ def twitchirc(bot, trigger, match = None):
       results.append("%s is playing %s [%s] - %s viewer%s" % (streamer_name,
                                                            streamer_game,
                                                            streamer_status,
-                                                           streamer_viewers,
+                                                           tsep(streamer_viewers),
                                                            "s" if streamer_viewers != 1 else "" ))
   if results:
     bot.say(", ".join(results))
@@ -156,7 +157,7 @@ def mixerirc(bot, trigger, match = None):
   results.append("%s is playing %s [%s] - %s viewer%s" % (streamer_name,
                                                          streamer_game,
                                                          streamer_status,
-                                                         streamer_viewers,
+                                                         tsep(streamer_viewers),
                                                          "s" if streamer_viewers != 1 else "" ))
   if results:
     bot.say(", ".join(results))
@@ -172,7 +173,7 @@ def twitchclipsirc(bot,trigger, match = None):
   title = clips['title']
   game = clips['game']
   views = clips['views']
-  bot.say("{} [{}] | {} | {} views".format(title, game, name, views))
+  bot.say("{} [{}] | {} | {} views".format(title, game, name, tsep(views)))
 
 @sopel.module.commands('debugtv')
 def debug(bot, trigger):
