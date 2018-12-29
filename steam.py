@@ -64,7 +64,7 @@ def getaverageplayers24h(appid, full=False):
             _24 = ''
         return "{:,}".format(int(_24h)) if _24h else ''
     else:
-        return current, _24h, alltime
+        return "{:,}".format(int(current)), "{:,}".format(int(_24h)), "{:,}".format(int(alltime))
 
 def getreviewdata(appid):
     review = {}
