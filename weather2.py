@@ -180,6 +180,20 @@ def get_forecast(bot,trigger,location=None):
       geo_loc = geo_object["geometry"]["location"]
       longlat = "{0},{1}".format(geo_loc["lat"], geo_loc["lng"])
     else:
+      if len(location) == 4:
+        url = "http://iatageo.com/getICAOLatLng/" + location.upper()
+        icao_loc = requests.get(url)
+        if "error" in icao_loc.json():
+          pass
+        else:
+          location = icao_loc.json()["latitude"] + " " + icao_loc.json()["longitude"]
+      elif len(location) == 3:
+        url = "http://iatageo.com/getLatLng/" + location.upper()
+        iata_loc = requests.get(url)
+        if "error" in iata_loc.json():
+          pass
+        else:
+          location = iata_loc.json()["latitude"] + " " + iata_loc.json()["longitude"]
       geo_object = geo_lookup(location)
       if not geo_object:
         bot.reply("I don't know where that is.")
