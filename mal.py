@@ -44,7 +44,7 @@ def connect(url):
     bs = BeautifulSoup(x, "html.parser")
     return (bs, x)
 
-@sopel.module.commands('mal')
+@sopel.module.commands('mal_retired')
 def mal(bot,trigger):
     if not trigger.group(2):
         return bot.say("Enter an anime name you weeaboo.")
