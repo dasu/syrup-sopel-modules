@@ -54,7 +54,7 @@ from sopel.module import rule, commands, example
 
 URL_REGEX = re.compile(r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
 INFO_URL = ('https://www.googleapis.com/youtube/v3/videos'
-            '?key={}&part=contentDetails,status,snippet,statistics&id={}')
+            '?key={}&part=contentDetails,status,snippet,statistics,liveStreamingDetails&id={}')
 SEARCH_URL = ('https://www.googleapis.com/youtube/v3/search'
               '?key={}&part=id&maxResults=1&q={}&type=youtube%23video')
 
@@ -125,6 +125,7 @@ def fetch_video_info(bot, id):
         'likes': video['statistics'].get('likeCount') or '0',
         'dislikes': video['statistics'].get('dislikeCount') or '0',
         'link': 'https://youtu.be/' + video['id']
+        'liveviewers': video['liveStreamingDetails']['concurrentViewers'] if video.get('liveStreamingDetails') else '0'
     }
 
     return info
@@ -151,7 +152,10 @@ def format_info(tag, info, include_link=False):
         u'Likes: ' + fix_count(info['likes']),
         u'Dislikes: ' + fix_count(info['dislikes'])
     ]
-
+    if info['liveviewers'] != '0':
+        del output[3]
+        output.insert(4,u'LiveViewers: ' + fix_count(info['liveviewers']))
+        
     if include_link:
         output.append(u'Link: ' + info['link'])
 
