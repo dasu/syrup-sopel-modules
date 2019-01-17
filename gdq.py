@@ -19,7 +19,7 @@ def GDQdatetime():
             nextgdqstartest = "Early June"
         delta = None
         return now, delta, nextgdqstartest
-    begdtext = re.sub(r' - .*?,',',',dtext)
+    begdtext = re.sub(r' ?- ?.*?,',',',dtext)
     fdtext = re.sub(r'(?<=\d)(st|nd|rd|th)','',begdtext)
     try:
         gdqs = (datetime.strptime(fdtext, "%B %d, %Y")).replace(tzinfo=timezone.utc)
@@ -99,7 +99,7 @@ def gdq(bot, trigger):
             return bot.say("GDQ is {0} days away ({1}) | https://gamesdonequick.com/schedule".format(tts.days,gdqstart.strftime('%m/%d/%Y')))
 
     if nextgame == 'done':
-        return bot.say("GDQ is {0} days away ({1} [estimated])".format(delta.days,textdate))
+        return bot.say("GDQ is {0} days away ({1})".format(delta.days,textdate))
     if game:
         if comment:
             bot.say("Current Game: {0} by {1} ETA: {2} Comment: {3} | Next Game: {4} by {5} | http://www.twitch.tv/gamesdonequick | https://gamesdonequick.com/schedule".format(game, runner, eta, comment, nextgame, nextrunner))
