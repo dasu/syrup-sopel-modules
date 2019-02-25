@@ -13,6 +13,21 @@ def setup(bot):
 def shutdown(bot):
     del bot.memory['url_callbacks'][steamregex]
 
+def altsteamsearch(query):
+    b = requests.get('https://duckduckgo.com/html', {'k1':'us-en', 'q':'steam {}'.format(query)}, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}).text
+    r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js)(?:\/l\/\?kh=-1&amp;uddg=))(.*?)">')
+    r_appid = re.compile(r'.*https?:\/\/store\.steampowered\.com\/app\/(.*?(?=\/))(?:.*?\/)')
+    if 'web-result' in b:
+        b = b.split('web-result')[1]
+    m = r_duck.search(b)
+    if m:
+        appid = r_appid.search(m.group(1))
+        if not appid:
+            return None
+    else:
+        return None
+    return appid.group(1)
+    
 def getsteamappid(game):
     try:
         url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(game)
@@ -121,3 +136,34 @@ def steamp(bot, trigger):
         if not current:
             return
         bot.say("[{}] Current: {} | 24h: {} | All-Time: {}".format(gameinfo['name'], current, _24h, alltime))
+
+@sopel.module.commands('altsteam', 'steamalt')
+def altsteam(bot, trigger):
+  if trigger.group(2):
+    appid = altsteamsearch(trigger.group(2))
+    if appid == None:
+      return
+    gameinfo = getgameinfo(appid)
+    averageplayers = getaverageplayers24h(appid)
+    rating = getreviewdata(appid)
+    bot.say("[{0}]{1}{2}{3}{4}{5}".format(gameinfo['name'],
+                                        " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
+                                        " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
+                                        " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
+                                        " Coming soon: {}|".format(gameinfo['release']) if gameinfo['release'] else '',
+                                        " http://store.steampowered.com/app/{}/".format(appid)))
+
+@sopel.module.commands('altplayers', 'playersalt')
+def altplayers(bot, trigger):
+  if trigger.group(2):
+    appid = altsteamsearch(trigger.group(2))
+    if appid == None:
+      return
+    gameinfo = getgameinfo(appid)
+    try:
+      current, _24h, alltime = getaverageplayers24h(appid, True)
+    except:
+      return bot.say("Not a valid video game.")
+    if not current:
+      return
+    bot.say("[{}] Current: {} | 24h: {} | All-Time: {}".format(gameinfo['name'], current, _24h, alltime))
