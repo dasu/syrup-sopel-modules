@@ -125,7 +125,7 @@ def fetch_video_info(bot, id):
         'likes': video['statistics'].get('likeCount') or '0',
         'dislikes': video['statistics'].get('dislikeCount') or '0',
         'link': 'https://youtu.be/' + video['id']
-        'liveviewers': video['liveStreamingDetails']['concurrentViewers'] if video.get('liveStreamingDetails') else '0'
+        'liveviewers': video['liveStreamingDetails'].get('concurrentViewers','0') if video.get('liveStreamingDetails') else '0'
     }
 
     return info
