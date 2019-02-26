@@ -63,7 +63,7 @@ def nextbday(bot, trigger):
             if c[1].date() == datetime.today().replace(year=1904).date():
                 btoday = "Today is {0} birthday!".format(c[0])
         nname=res[0][0]
-        nnname = res[0][0][:int(len(res[0][0])/2)] + "_" + res[0][0][int(len(res[0][0])/2):]
+        nnname = u'\u200B'.join(res[0][0])
         nbday=(dict[nname]).strftime('%B %d')
         daysaway=(res[0][1]).days + 1
         if btoday:
