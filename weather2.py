@@ -204,7 +204,7 @@ def get_forecast(bot,trigger,location=None):
     units = bot.db.get_nick_value(trigger.nick, 'units')
     if not units:
       units = 'auto'
-    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}'.format(forecastapi,longlat,units))
+    forecast = requests.get('https://api.darksky.net/forecast/{0}/{1}?units={2}&exclude=minutely,hourly'.format(forecastapi,longlat,units))
     location = geo_object["formatted_address"]
     if location[-3:] == 'USA':
       location =', '.join([b['short_name'] for b in geo_object['address_components'] if b['types'][0] == 'locality' or b['types'][0] == 'administrative_area_level_1'])
@@ -261,7 +261,7 @@ def weather7(bot,trigger):
         sevendays.append("{0}:({1}|{2})".format(wkday,mintemp,maxtemp))
     #del sevendays[0]
     sevendays = ", ".join(sevendays)
-    bot.say("{0}: [{1}] {2}".format(location, summary, str(sevendays)))
+    bot.say("{0}: [{1}] {2} | {3}".format(location, summary, str(sevendays),"https://darksky.net/forecast/{:0.4f},{:0.4f}/".format(forecast.json()['latitude'],forecast.json()['longitude'])))
 
 @commands('weather', 'wea', 'w')
 @example('.weather London')
