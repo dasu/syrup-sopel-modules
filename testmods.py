@@ -78,6 +78,7 @@ def hostm(bot,trigger):
 def zfg(bot, trigger):
     session = streamlink.Streamlink()
     session.set_plugin_option("twitch", "disable_hosting", True)
+    session.set_plugin_option("twitch", "disable_ads", True)
     st = session.streams("https://twitch.tv/zfg1")
     if not st:
       return bot.say("zfg isn't streaming :(")
