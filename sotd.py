@@ -11,9 +11,11 @@ import requests
 import shutil
 import random
 import string
-import youtube_dl  #you will get .isatty() errors, and the only way I know how to fix this is by removing those checks from youtube_dl
+import youtube_dl
 from nicovideo import Nicovideo
 import os
+import sys
+sys.stderr.isatty = lambda: False #to avoid youtube_dl errors with isatty()
 #what a mess
 
 def convert_date(date):
