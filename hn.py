@@ -18,10 +18,14 @@ def shutdown(bot):
 @sopel.module.example('.rhn url')
 def rhn(bot, trigger):
     if not trigger.group(2):
-        return bot.say("Enter a URL to see if there is a HN discussion")
-    x = requests.get("https://hn.algolia.com/api/v1/search?query={}".format(trigger.group(2))).json()
+        if trigger.sender not in bot.memory['last_seen_url']:
+            return
+        rhnurl = bot.memory['last_seen_url'][trigger.sender]
+    else:
+        rhnurl = trigger.group(2)
+    x = requests.get("https://hn.algolia.com/api/v1/search?query={}".format(rhnurl)).json()
     try:
-        return bot.say("https://news.ycombinator.com/item?id={}".format(x['hits'][0]['objectID']))
+        return bot.say("https://news.ycombinator.com/item?id={} | {} | \U0001F4AC:{}".format(x['hits'][0]['objectID'],x['hits'][0]['title'],x['hits'][0]['num_comments']))
     except:
         return bot.say("No HN discussion found")
 
