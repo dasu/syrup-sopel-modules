@@ -1,5 +1,6 @@
 #As of 09-14-2016, twitch API now requires Client-ID with all requests.  You will need to create one from here: 
 # https://www.twitch.tv/settings/connections
+# v5 API compatibility coming soon
 # complete twitch.py rewrite coming soon™
 import requests
 import sopel
@@ -12,21 +13,15 @@ twitchclientid = "clientIDgoeshere"
 announce_chan = "#pancakes"
 logchannel = "#whateverchannelyouwant" #used for live logging certain issues that plague this module
 streamers = [
-"coalll",
-"chouxe",
-"kwlpp",
-"dasu_",
-"esicra",
-"agriks",
-"repppie",
-"squidgay",
-"supersocks",
-"sc00ty",
-"kaask",
-"mole_star",
-"twoiis",
-"sasserr",
-"mogra" #untz untz
+"coalll", #31847612
+"kwlpp", #22725500
+"dasu_", #27513704
+"agriks", #30346664
+"repppie", #44191385
+"supersocks", #24683935
+"sc00ty", #26979782
+"kaask", #37155900
+"mogra" #126482446 untz untz
 ]
 #end config
 
@@ -49,6 +44,13 @@ def shutdown(bot):
 currently_streaming = {}
 currently_ystreaming = {}
 tsep = lambda a : "{:,}".format(int(a))
+
+def gettwitchuserid(tuser):
+    tuid = requests.get("https://api.twitch.tv/kraken/users?login={}".format(tuser),headers={"Client-ID":twitchclientid,"Accept":"application/vnd.twitchtv.v5+json"}).json()
+    if not tuid['users']:
+      return None
+    else:
+      return tuid['users'][0]['_id']
 
 @sopel.module.interval(20)
 def monitor_streamers(bot):
