@@ -87,7 +87,7 @@ def getreviewdata(appid):
         x = requests.get("https://store.steampowered.com/appreviews/{}?start_offset=0&day_range=30&start_date=-1&end_date=-1&date_range_type=all&filter=summary&language=english&l=english&review_type=all&purchase_type=all&review_beta_enabled=1".format(appid)).json()
         bs = BeautifulSoup(x['review_score'],"html.parser")
         review['reviewsummary'] = bs.findAll("span")[1].text
-        review['reviewpercentage'] = bs.findAll("span")[1]['data-tooltip-text'].split('%')[0]+'%'
+        review['reviewpercentage'] = bs.findAll("span")[1]['data-tooltip-html'].split('%')[0]+'%'
     except:
         review['reviewsummary'] = ''
         return review
