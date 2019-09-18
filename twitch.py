@@ -24,9 +24,9 @@ streamers = [
 ]
 #end config
 
-twitchregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
-mixerregex = re.compile('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
-twitchclipsregex = re.compile('(?!.*\/v\/).*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+twitchregex = re.compile('.*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s|\/])|$)')
+mixerregex = re.compile('.*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
+twitchclipsregex = re.compile('.*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
@@ -124,7 +124,7 @@ def streamer_status(bot, trigger):
   else:
     bot.say("Nobody is currently streaming.")
 
-@sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
+@sopel.module.rule('.*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s|\/])|$)')
 def twitchirc(bot, trigger, match = None):
   match = match or trigger
   streamer_name = match.group(1)
@@ -148,7 +148,7 @@ def twitchirc(bot, trigger, match = None):
   else:
     pass
 
-@sopel.module.rule('(?!.*\/v\/).*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
+@sopel.module.rule('.*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
 def mixerirc(bot, trigger, match = None):
   match = match or trigger
   streamer_name = match.group(1)
@@ -173,7 +173,7 @@ def mixerirc(bot, trigger, match = None):
   else:
     pass
 
-@sopel.module.rule('.*(?:https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$))|(?:https?:\/\/(?:www)?\.twitch\.tv\/.*?\/clip\/(.*?)\/?(?:(?=[\s])|$))')
+@sopel.module.rule('.*(?:https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$))|.*(?:https?:\/\/(?:www)?\.twitch\.tv\/.*?\/clip\/(.*?)\/?(?:(?=[\s])|$))')
 def twitchclipsirc(bot,trigger, match = None):
   match = match or trigger
   slug = match.group(1) or match.group(2)
