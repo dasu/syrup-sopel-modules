@@ -167,3 +167,13 @@ def altplayers(bot, trigger):
     if not current:
       return
     bot.say("[{}] Current: {} | 24h: {} | All-Time: {}".format(gameinfo['name'], current, _24h, alltime))
+
+@sopel.module.commands('steamsale', 'sale', 'nextsale')
+def steamsale(bot, trigger):
+    x = requests.get("https://whenisthenextsteamsale.com")
+    bs = BeautifulSoup(x.content, "html.parser")
+    res = json.loads(bs.find(id="hdnNextSale").get('value'))
+    if res:
+        bot.say("Next Steam Sale: {} [{}] | {}-{} (In {} days)".format(res['Name'], "Confirmed" if res['IsConfirmed'] else "Unconfirmed", datetime.strptime(res['StartDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"), datetime.strptime(res['EndDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),res['RemainingTime'].split('.')[0]))
+    else:
+        bot.say("No known upcoming steam sale.")
