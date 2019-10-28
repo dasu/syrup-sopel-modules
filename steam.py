@@ -174,6 +174,6 @@ def steamsale(bot, trigger):
     bs = BeautifulSoup(x.content, "html.parser")
     res = json.loads(bs.find(id="hdnNextSale").get('value'))
     if res:
-        bot.say("Next Steam Sale: {} [{}] | {}-{} (In {} days)".format(res['Name'], "Confirmed" if res['IsConfirmed'] else "Unconfirmed", datetime.strptime(res['StartDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"), datetime.strptime(res['EndDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),res['RemainingTime'].split('.')[0]))
+        bot.say("Next Steam Sale: {} [{}] | {}-{} (In {})".format(res['Name'], "Confirmed" if res['IsConfirmed'] else "Unconfirmed", datetime.strptime(res['StartDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"), datetime.strptime(res['EndDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),res['RemainingTime'].split('.')[0] + ' days' if len(res['RemainingTime'].split('.')) == 3 else res['RemainingTime'].split('.')[0].split(':')[0] + ' hours'))
     else:
         bot.say("No known upcoming steam sale.")
