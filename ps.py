@@ -12,4 +12,5 @@ def postscriptum(bot,trigger):
   map = data[0].split(b'\x00')[1].decode()
   players = data[0].split(b'\x00')[6][0]
   maxplayers = data[0].split(b'\x00')[6][1]
+  sock.close()
   bot.say("Map: {} | Players: {} / {} ".format(map, players, maxplayers))
