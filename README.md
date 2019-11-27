@@ -38,6 +38,8 @@ Outputs information on nicovideo urls when they're posted to the channel.
 Pushbullet module.  At work and someone posted a link to something interesting, but can't/shouldn't view it?  Push it to your phone instead to safely view it.  Requires pushbullet API key.
 ##### pixiv.py
 Pixiv module to search pixiv (jp and en) images.  Warning, this has a higher memory/cpu usage compared to other modules.
+##### ps.py
+Outputs the current map and player count of Easy Company, 506th PIR #1 Post Scriptum server.  Can be modified for other games with steamwork compatible servers.
 ##### ratewaifu.py
 A waifu rating module that provides absolutely no value. Don't forget, you're waifu a shit tho.
 ##### remind.py
