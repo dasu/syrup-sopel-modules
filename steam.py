@@ -93,6 +93,20 @@ def getreviewdata(appid):
         return review
     return review
 
+def getlowestprice(appid):
+    try:
+        url = 'https://steamdb.info/api/GetPriceHistory/?appid={}&cc=us'.format(appid)
+        x = requests.get(url, headers={'referer': 'https://steamdb.info/app/{}/'.format(appid),'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'})
+        data = x.json()['data']
+        low = list(reversed(data['final']))[list(reversed([i[1] for i in data['final']])).index(min([i[1] for i in data['final']]))]  #lol
+        #low = sorted([x for x in data["final"] if x[1] == sorted(data["final"], key=lambda item: item[1])[0][1]], key=lambda other_item: other_item[0], reverse=True)[0]   #ALTERNATIVE BY sc00ty
+        lowestdate = datetime.fromtimestamp(low[0]/1000)
+        lowestprice = data['formatted'][str(low[0])]['final']
+        lowestdiscount = "{}%".format(data['formatted'][str(low[0])]['discount'])
+    except:
+        return '','',''
+    return lowestdate, lowestprice, lowestdiscount
+
 @sopel.module.commands('steam')
 def steam(bot,trigger):
     if trigger.group(2):
@@ -102,11 +116,13 @@ def steam(bot,trigger):
         gameinfo = getgameinfo(appid)
         averageplayers = getaverageplayers24h(appid)
         rating = getreviewdata(appid)
-        bot.say("[{0}]{1}{2}{3}{4}{5}".format(gameinfo['name'],
+        lowestdate, lowestprice, lowestdiscount = getlowestprice(appid)
+        bot.say("[{0}]{1}{2}{3}{4}{5}{6}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
                                             " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
-                                            " Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else '',
+                                            " Coming soon: {} |".format(gameinfo['release']) if gameinfo['release'] else '',
+                                            " Lowest Price: {} (-{}) on {} |".format(lowestprice, lowestdiscount, lowestdate.strftime("%m-%Y")) if lowestprice else '',
                                             " http://store.steampowered.com/app/{}/".format(appid)))
 
 @sopel.module.rule('.*https?:\/\/store\.steampowered\.com\/app\/(.*?\/)(?:.*?\/)?(?:.*)((?=[\s])|$)')
@@ -116,11 +132,13 @@ def steamirc(bot,trigger, match=None):
     gameinfo = getgameinfo(appid)
     averageplayers = getaverageplayers24h(appid)
     rating = getreviewdata(appid)
-    bot.say("[{0}]{1}{2}{3}{4}".format(gameinfo['name'],
+    lowestdate, lowestprice, lowestdiscount = getlowestprice(appid)
+    bot.say("[{0}]{1}{2}{3}{4}{5}".format(gameinfo['name'],
                                             " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                             " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
                                             " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
-                                            " Coming soon: {}".format(gameinfo['release']) if gameinfo['release'] else ''))
+                                            " Lowest Price: {} (-{}) on {} ".format(lowestprice, lowestdiscount, lowestdate.strftime("%m-%Y")) if lowestprice else '',
+                                            " Coming soon: {} ".format(gameinfo['release']) if gameinfo['release'] else ''))
 
 @sopel.module.commands('steamp','players','steamchart')
 def steamp(bot, trigger):
@@ -146,11 +164,13 @@ def altsteam(bot, trigger):
     gameinfo = getgameinfo(appid)
     averageplayers = getaverageplayers24h(appid)
     rating = getreviewdata(appid)
-    bot.say("[{0}]{1}{2}{3}{4}{5}".format(gameinfo['name'],
+    lowestdate, lowestprice, lowestdiscount = getlowestprice(appid)
+    bot.say("[{0}]{1}{2}{3}{4}{5}{6}".format(gameinfo['name'],
                                         " Rating: {} ({}) |".format(rating['reviewsummary'], rating['reviewpercentage']) if rating['reviewsummary'] else '',
                                         " Peak Players 24H: {} |".format(averageplayers) if averageplayers else '',
                                         " Price: {}{} |".format(gameinfo['price'], " (-{}%)".format(gameinfo['discount']) if gameinfo['discount'] else '') if gameinfo['price'] else '',
-                                        " Coming soon: {}|".format(gameinfo['release']) if gameinfo['release'] else '',
+                                        " Lowest Price: {} (-{}) on {} |".format(lowestprice, lowestdiscount, lowestdate.strftime("%m-%Y")) if lowestprice else '',
+                                        " Coming soon: {} |".format(gameinfo['release']) if gameinfo['release'] else '',
                                         " http://store.steampowered.com/app/{}/".format(appid)))
 
 @sopel.module.commands('altplayers', 'playersalt')
@@ -174,6 +194,11 @@ def steamsale(bot, trigger):
     bs = BeautifulSoup(x.content, "html.parser")
     res = json.loads(bs.find(id="hdnNextSale").get('value'))
     if res:
-        bot.say("Next Steam Sale: {} [{}] | {}-{} (In {})".format(res['Name'], "Confirmed" if res['IsConfirmed'] else "Unconfirmed", datetime.strptime(res['StartDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"), datetime.strptime(res['EndDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),res['RemainingTime'].split('.')[0] + ' days' if len(res['RemainingTime'].split('.')) == 3 else res['RemainingTime'].split('.')[0].split(':')[0] + ' hours'))
+        bot.say("Next Steam Sale: {} [{}] | {}-{} (In {})".format(res['Name'],
+                                                                  "Confirmed" if res['IsConfirmed'] else "Unconfirmed",
+                                                                  datetime.strptime(res['StartDate'], '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),
+                                                                  datetime.strptime(res['EndDate'],
+                                                                  '%Y-%m-%dT%H:%M:%S').strftime("%m/%d"),
+                                                                  res['RemainingTime'].split('.')[0] + ' days' if len(res['RemainingTime'].split('.')) == 3 else res['RemainingTime'].split('.')[0].split(':')[0] + ' hours'))
     else:
         bot.say("No known upcoming steam sale.")
