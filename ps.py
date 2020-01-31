@@ -10,7 +10,11 @@ def postscriptum(bot,trigger):
   sock.sendto(b'\xff\xff\xff\xffTSource Engine Query\x00', (ip, int(port)))
   data = sock.recvfrom(1400)
   map = data[0].split(b'\x00')[1].decode()
-  players = data[0].split(b'\x00')[6][0]
-  maxplayers = data[0].split(b'\x00')[6][1]
+  if len(data[0].split(b'\x00')) == 17:
+    players = data[0].split(b'\x00')[6][0]
+    maxplayers = data[0].split(b'\x00')[6][1]
+  else:
+    players = 0
+    maxplayers = data[0].split(b'\x00')[7][0]
   sock.close()
   bot.say("Map: {} | Players: {} / {} ".format(map, players, maxplayers))
