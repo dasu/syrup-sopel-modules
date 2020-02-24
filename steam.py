@@ -14,9 +14,9 @@ def shutdown(bot):
     del bot.memory['url_callbacks'][steamregex]
 
 def altsteamsearch(query):
-    b = requests.get('https://duckduckgo.com/html', {'k1':'us-en', 'q':'steam {}'.format(query)}, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}).text
+    b = requests.get('https://duckduckgo.com/html', {'k1':'us-en', 'q':'steam charts {}'.format(query)}, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36'}).text
     r_duck = re.compile(r'nofollow" class="[^"]+" href="(?!(?:https?:\/\/r\.search\.yahoo)|(?:https?:\/\/duckduckgo\.com\/y\.js)(?:\/l\/\?kh=-1&amp;uddg=))(.*?)">')
-    r_appid = re.compile(r'.*https?:\/\/store\.steampowered\.com\/app\/(.*?(?=\/))(?:.*?\/)')
+    r_appid = re.compile(r'.*https?:\/\/steamcharts\.com\/app\/(.*?$)')
     if 'web-result' in b:
         b = b.split('web-result')[1]
     m = r_duck.search(b)
