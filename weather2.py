@@ -14,7 +14,7 @@ from pytz import timezone
 
 forecastapi = '' # https://darksky.net/dev
 glocation = '' # https://developers.google.com/maps/documentation/geocoding/get-api-key
-bitlyapi = '' # http://dev.bitly.com/get_started.html  ##using the generic access token and not Oauth2, make sure to create an actual account and not use gmail login, or things get weird on their website
+bitlyapi = '' # http://dev.bitly.com/get_started.html  # This is the Oauth2 access token, it is forced in API v4, you have to register an app. You can get the token with curl: curl -u "CLIENT_ID:CLIENT_SECRET" -d "grant_type=password" -d "username=USERNAME" -d "password=PASSWORD" https://api-ssl.bitly.com/oauth/access_token
 aqapi = '' #https://www.airnowapi.org/
 
 def geo_lookup(location):
@@ -32,9 +32,11 @@ def geo_lookup(location):
 
 def get_short_url(gurl):
     global bitlyapi
-    short_url_service = 'https://api-ssl.bitly.com/v3/shorten?access_token={}&longUrl={}'.format(bitlyapi,requests.compat.quote_plus(gurl))
-    r = requests.get(short_url_service)
-    return r.json()['data']['url']
+    short_url_service = 'https://api-ssl.bitly.com/v4/shorten'
+    header = {'Authorization': 'Bearer ' + bitlyapi}
+    payload = {'long_url': gurl}
+    r = requests.post(short_url_service, headers=header, json=payload)
+    return 'https://' + r.json()['id']
 
 def get_temp(forecast):
     try:
