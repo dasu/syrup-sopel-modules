@@ -37,6 +37,8 @@ def egs(bot, trigger):
   freenow = []
   upcomingfree = []
   for x in res['data']['Catalog']['catalogOffers']['elements']:
+    if not x['promotions']:
+      continue
     if x['promotions']['promotionalOffers']:
       freenow.append("{} [until {}]".format(x['title'], datetime.datetime.strptime(x['promotions']['promotionalOffers'][0]['promotionalOffers'][0]['endDate'], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%m/%d")))
     else:
