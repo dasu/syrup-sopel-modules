@@ -42,6 +42,6 @@ def egs(bot, trigger):
     if x['promotions']['promotionalOffers']:
       freenow.append("{} [until {}]".format(x['title'], datetime.datetime.strptime(x['promotions']['promotionalOffers'][0]['promotionalOffers'][0]['endDate'], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%m/%d")))
     else:
-      upcomingfree.append("{} [starts {}]".format(x['title'], datetime.datetime.strptime(x['promotions']['upcomingPromotionalOffers'][0]['promotionalOffers'][0]['endDate'], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%m/%d")))
+      upcomingfree.append("{} [starts {}]".format(x['title'], datetime.datetime.strptime(x['promotions']['upcomingPromotionalOffers'][0]['promotionalOffers'][0]['startDate'], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%m/%d")))
 
   bot.say("Free now: {} | Upcoming: {}".format(", ".join(freenow), ", ".join(upcomingfree)))
