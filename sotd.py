@@ -20,7 +20,8 @@ sys.stderr.isatty = lambda: False #to avoid youtube_dl errors with isatty()
 
 def convert_date(date):
     """Parses an ISO 8601 datestamp and reformats it to be a bit nicer"""
-    date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.000Z')
+    date = re.sub("\..*Z","Z", date)
+    date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
     return date.strftime('%Y-%m-%d %H:%M:%S UTC')
 
 def convert_duration(duration):
