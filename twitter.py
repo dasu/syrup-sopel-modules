@@ -1,0 +1,21 @@
+import requests
+from bs4 import BeautifulSoup
+import sopel
+import re
+
+twitterregex = re.compile("(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
+
+def setup(bot):
+  if not bot.memory.contains('url_callbacks'):
+    bot.memory['url_callbacks'] = SopelMemory()
+  bot.memory['url_callbacks'][twitterregex] = twatterirc
+
+@sopel.module.rule("(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
+def twatterirc(bot,trigger):
+  url = "https://publish.twitter.com/oembed?url={}".format(trigger.group(1))
+  x = requests.get(url)
+  user = x.json()['author_name']
+  bs = BeautifulSoup(x.json()['html'], "html.parser")
+  for a_tag in bs.find_all('a'):
+    a_tag.string = a_tag.get('href')
+  bot.say("[Twitter] {}: {}".format(user, bs.p.text))
