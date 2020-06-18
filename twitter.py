@@ -17,5 +17,7 @@ def twatterirc(bot,trigger):
   user = x.json()['author_name']
   bs = BeautifulSoup(x.json()['html'], "html.parser")
   for a_tag in bs.find_all('a'):
+    if((a_tag.text.startswith("#")) or (a_tag.text.startswith("@"))):
+      continue
     a_tag.string = a_tag.get('href')
   bot.say("[Twitter] {}: {}".format(user, bs.p.text))
