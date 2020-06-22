@@ -10,7 +10,7 @@ def stocks(bot,trigger):
     if not trigger.group(2):
         x = requests.get("https://finnhub.io/api/v1/quote?symbol=^DJI&token=INSERT_TOKEN_HERE")
     else:
-        x = requests.get("https://finnhub.io/api/v1/quote?symbol={}&token=INSERT_TOKEN_HERE".format(trigger.group(2)))
+        x = requests.get("https://finnhub.io/api/v1/quote?symbol={}&token=INSERT_TOKEN_HERE".format((trigger.group(2)).upper()))
     if x.json().get('Note'):
         return bot.say('Rate limit reached (30/min), try again in one minute')
     if x.json().get('Error Message'):
