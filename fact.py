@@ -136,7 +136,8 @@ def fact(bot, trigger):
         "Hundreds of millions of people are born into a poverty from which they cannot escape",
         "Miscommunication between two people can have deadly consequences",
         "A successful marriage ends with you watching the other die",
-        "Penguins can not fly"
+        "Penguins can not fly",
+        "The everyday life you take for granted will one day crumble."        
         ]
 
     bot.say(":V Fact Seagull says: {}".format(random.choice(x)))
