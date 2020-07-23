@@ -25,19 +25,16 @@ streamers = [
 #end config
 
 twitchregex = re.compile('.*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s|\/])|$)')
-mixerregex = re.compile('.*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
 twitchclipsregex = re.compile('.*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
         bot.memory['url_callbacks'] = SopelMemory()
     bot.memory['url_callbacks'][twitchregex] = twitchirc
-    bot.memory['url_callbacks'][mixerregex] = mixerirc
     bot.memory['url_callbacks'][twitchclipsregex] = twitchclipsirc
 
 def shutdown(bot):
     del bot.memory['url_callbacks'][twitchregex]
-    del bot.memory['url_callbacks'][mixerregex]
     del bot.memory['url_callbacks'][twitchclipsregex]
 
 currently_streaming = {}
@@ -143,31 +140,6 @@ def twitchirc(bot, trigger, match = None):
                                                                    streamer["url"],
                                                                    tsep(streamer["viewers"]),
                                                                    "s" if streamer["viewers"] != 1 else ""))
-  if results:
-    bot.say(", ".join(results))
-  else:
-    pass
-
-@sopel.module.rule('.*https?:\/\/(?:www\.)?mixer.com\/(.*?)\/?(?:(?=[\s])|$)')
-def mixerirc(bot, trigger, match = None):
-  match = match or trigger
-  streamer_name = match.group(1)
-  streaming = requests.get('https://mixer.com/api/v1/channels/{}'.format(streamer_name)).json()
-  results = []
-  if streaming:
-    streamer_name = streaming["token"]
-    if streaming.get("type"):
-      streamer_game = streaming["type"]["name"]
-    else:
-      streamer_game = "a game"
-    streamer_status = streaming["name"]
-    streamer_viewers = streaming["viewersCurrent"]
-
-  results.append("%s is playing %s [%s] - %s viewer%s" % (streamer_name,
-                                                         streamer_game,
-                                                         streamer_status,
-                                                         tsep(streamer_viewers),
-                                                         "s" if streamer_viewers != 1 else "" ))
   if results:
     bot.say(", ".join(results))
   else:
