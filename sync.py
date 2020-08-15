@@ -9,6 +9,7 @@ import time
 old_syncs = []
 current_syncs = []
 sync_id = 0
+max_old_syncs = 100
 
 class Sync:
 	def __init__(self, syncers):
@@ -54,6 +55,12 @@ def find_sync(bot, trigger, nick, sync_list, sid=None):
 				break
 	return sync
 
+def add_old_sync(sync):
+	global old_syncs
+	old_syncs.insert(0, sync)
+	if len(old_syncs) > max_old_syncs:
+		old_syncs = old_syncs[:len(old_syncs)-max_old_syncs]
+
 @sopel.module.interval(10)
 @sopel.module.priority("high")
 def sync_update(bot):
@@ -61,7 +68,7 @@ def sync_update(bot):
 	for s in current_syncs:
 		s.timeout -= 1
 		if s.timeout <= 0:
-			old_syncs.insert(0, s)
+			add_old_sync(s)
 			bot.say("Sync {:X} failed!".format(id))
 
 	current_syncs = [s for s in current_syncs if s.timeout > 0]
@@ -94,7 +101,7 @@ def desync(bot, trigger):
 		bot.say("Sorry! You are not in a sync!")
 	else:
 		current_syncs = [s for s in current_syncs if s is not sync]
-		old_syncs.insert(0, sync)
+		add_old_sync(sync)
 		bot.say("Desyncing... (ID: {:X})".format(sync.id))
 
 @sopel.module.commands("ready")
@@ -116,15 +123,12 @@ def ready(bot, trigger):
 		sync.syncers[Identifier(trigger.nick)] = True
 		if sync.ready():
 			current_syncs = [s for s in current_syncs if s is not sync]
-			old_syncs.insert(0, sync)
+			add_old_sync(sync)
 			bot.say("Lets go {}!".format(sync.names()))
-			time.sleep(1)
-			bot.say("3")
-			time.sleep(1)
-			bot.say("2")
-			time.sleep(1)
-			bot.say("1")
-			time.sleep(1)
+			time.sleep(2)
+			for i in reversed(range(1,4)):
+				bot.say("{}".format(i))
+				time.sleep(2)
 			bot.say("GO!")
 	
 		
@@ -135,7 +139,7 @@ def resync(bot, trigger):
 	global old_syncs
 	sid = trigger.group(2)
 	if sid is not None:
-		sid = int(sid) 
+		sid = int(sid, 16) 
 
 	sync = find_sync(bot, trigger, Identifier(trigger.nick), old_syncs, sid)
 
@@ -148,4 +152,4 @@ def resync(bot, trigger):
 
 		old_syncs = [s for s in old_syncs if s is not sync]
 		current_syncs.append(sync)
-	bot.say("Buckle up resyncers! (ID: {:X})".format(sync.id))
+	bot.say("Buckle up resyncers! {} (ID: {:X})".format(sync.names(), sync.id))
