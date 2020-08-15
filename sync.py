@@ -1,318 +1,151 @@
 """
-Rework of sync. Allows users to ready 
-and sync movies or whatever.
+RE-Rework of sync (v4?). Allows users to ready 
+and sync movies or whatever.  By @agricola
 """
-from threading import Timer
-from sopel.module import commands
-from time import sleep
+import sopel.module
 from sopel.tools import Identifier
+import time
 
-ALREADY_READY_MESSAGE = "You are already ready!"
-BUCKLE_UP_MESSAGE = "Buckle up "
-DESYNCING_SYNC_MESSAGE = "Desyncing..."
-NOT_A_SYNCER_MESSAGE = "You are not part of this sync."
-IS_INVALID_MESSAGE = "is an invalid syncer. "
-ARE_INVALID_MESSAGE = "are invalid syncers. "
-SYNC_FAILED_MESSAGE = "Sync failed."
-WHAT_DOING_MESSAGE = "What are you doing, noob?"
-INCLUDE_SELF_MESSAGE = "Include yourself in the sync, clown."
-WAIT_FOR_SYNC_MESSAGE = "Wait for the current sync to finish."
-NO_SYNC_MESSAGE = "There is no sync."
-NO_PREV_SYNC_MESSAGE = "No previous sync."
-WAS_LAST_SYNCER_MESSAGE = "was in the last sync."
-WERE_LAST_SYNCERS_MESSAGE = "were in the last sync."
-NOT_IN_PREV_SYNC_MESSAGE = "You were not in the last sync."
-
-_current_sync = None # holds the current sync object being used
-_previous_sync = None
+old_syncs = []
+current_syncs = []
+sync_id = 0
 
 class Sync:
-    __syncers = []
-    __bot = None
-    __sync_timer = None
-    __channel_user_list = []
-    __syncer_names = []
-    __valid = True
+	def __init__(self, syncers):
+		global sync_id
+		self.syncers = syncers
+		self.timeout = 10
+		self.id = sync_id
+		sync_id += 1
 
-    # constructor that sets syncers and starts the mad timer
-    def __init__(self, syncer_names, bot, channel_user_list):
-        self.__channel_user_list = channel_user_list
-        self.__bot = bot
-        self.__syncer_names = syncer_names
-        self.__syncers, non_valid_syncers = self.syncer_list(syncer_names)
+	def ready(self):
+		return all([r for s,r in self.syncers.items()])
 
-        self.start_sync_if_valid(non_valid_syncers)
+	def names(self):
+		return ", ".join([str(s) for s,r in self.syncers.items()])
 
-    @property
-    def syncer_names(self):
-        return self.__syncer_names
+def check_valid(bot, trigger, sync):
+	channel_users = [Identifier(n) for n in bot.channels[trigger.sender.lower()].users]
+	if Identifier(bot.nick) in sync.syncers:
+		bot.say("Sorry! I'm shy!!!")
+		return False
 
-    @property
-    def syncers(self):
-        return self.__syncers
+	if len(sync.syncers) < 2:
+		bot.say("Not enough syncers! Get some friends!")
+		return False
 
-    @property
-    def is_valid(self):
-        return self.__valid
+	for nick in sync.syncers:
+		if nick not in channel_users:
+			bot.say("{} is invalid! Get em outta here!".format(str(nick)))
+			return False
+		else:
+			for s in current_syncs:
+				if s is not sync and nick in s.syncers:
+					bot.say("{} is busy with sync {:X}".format(str(nick), s.id))
+					return False
+	return True
 
-    def reinitialization_arguments(self):
-        return self.__syncer_names, self.__channel_user_list
+def find_sync(bot, trigger, nick, sync_list, sid=None):
+	sync = None
+	for s in sync_list:
+		if Identifier(nick) in s.syncers and check_valid(bot, trigger, s):
+			if sid is None or s.id == sid:
+				sync = s
+				break
+	return sync
 
+@sopel.module.interval(10)
+@sopel.module.priority("high")
+def sync_update(bot):
+	global current_syncs
+	for s in current_syncs:
+		s.timeout -= 1
+		if s.timeout <= 0:
+			old_syncs.insert(0, s)
+			bot.say("Sync {:X} failed!".format(id))
 
-    def start_sync_if_valid(self, non_valid_syncers):
-        if len(non_valid_syncers) > 0:
-            self.__bot.say(self.warn_of_invalid_syncers(non_valid_syncers))
-            self.__valid = False
-            self.desync_this_sync()
-        else:
-            self.start_timer()        
+	current_syncs = [s for s in current_syncs if s.timeout > 0]
 
-    # create list of syncers
-    def syncer_list(self, syncer_names):
-        syncers = []
-        non_valid_syncers = []
+@sopel.module.commands("sync")
+@sopel.module.commands("s")
+@sopel.module.priority("high")
+def sync(bot, trigger):
+	if trigger.group(2) == None:
+		return bot.say("Please include syncer names!")
 
-        for syncer_name in syncer_names:
-            new_syncer = Syncer(syncer_name)
-            if self.is_syncer_valid(new_syncer):
-                syncers.append(new_syncer)
-            else:
-                non_valid_syncers.append(new_syncer)
-        return syncers, non_valid_syncers
+	syncers = trigger.group(2).split()
+	syncers.append(trigger.nick)
 
-    # warn syncers of invalid syncers
-    def warn_of_invalid_syncers(self, invalid_syncers):
-        invalid_syncers_string = ""
-        
-        invalid_syncers_string = self.syncer_list_string(invalid_syncers)
+	sync = Sync({Identifier(s): False for s in set(syncers)})
 
-        invalid_syncers_string += " "
+	if check_valid(bot, trigger, sync):
+		sync.syncers[Identifier(trigger.nick)] = True
+		current_syncs.append(sync)
+		bot.say("Buckle up syncers! (ID: {:X})".format(sync.id))
 
-        if len(invalid_syncers) == 1:
-            warning = invalid_syncers_string + IS_INVALID_MESSAGE + DESYNCING_SYNC_MESSAGE
-        elif len(invalid_syncers) > 1:
-            warning = invalid_syncers_string + ARE_INVALID_MESSAGE + DESYNCING_SYNC_MESSAGE
+@sopel.module.commands("desync")
+@sopel.module.commands("ds")
+@sopel.module.priority("high")
+def desync(bot, trigger):
+	global current_syncs
+	sync = find_sync(bot, trigger, Identifier(trigger.nick), current_syncs)
 
-        return warning
+	if sync is None:
+		bot.say("Sorry! You are not in a sync!")
+	else:
+		current_syncs = [s for s in current_syncs if s is not sync]
+		old_syncs.insert(0, sync)
+		bot.say("Desyncing... (ID: {:X})".format(sync.id))
 
-    # string of syncers
-    def syncer_list_string(self, syncer_list):
-        names = []
-        for syncer in syncer_list:
-            names.append(syncer.name)
+@sopel.module.commands("ready")
+@sopel.module.commands("rdy")
+@sopel.module.commands("r")
+@sopel.module.commands("lady")
+@sopel.module.priority("high")
+def ready(bot, trigger):
+	global current_syncs
+	sync = find_sync(bot, trigger, Identifier(trigger.nick), current_syncs)
 
-        syncer_list_string = ", ".join(names[:-2] + [" and ".join(names[-2:])])
-        return syncer_list_string
+	# Debug
+	#bot.say("{}".format([s.id for s in current_syncs]))
+	#bot.say("{}".format([s.id for s in old_syncs]))
 
-    # checks if sync is ready IS THIS NEEDED?
-    def are_all_syncers_ready(self):
-        are_all_syncers_ready = True
+	if sync is None:
+		bot.say("Sorry! Could not find you in a valid sync!")
+	else:
+		sync.syncers[Identifier(trigger.nick)] = True
+		if sync.ready():
+			current_syncs = [s for s in current_syncs if s is not sync]
+			old_syncs.insert(0, sync)
+			bot.say("Lets go {}!".format(sync.names()))
+			time.sleep(1)
+			bot.say("3")
+			time.sleep(1)
+			bot.say("2")
+			time.sleep(1)
+			bot.say("1")
+			time.sleep(1)
+			bot.say("GO!")
+	
+		
+@sopel.module.commands("resync")
+@sopel.module.commands("rs")
+@sopel.module.priority("high")
+def resync(bot, trigger):
+	global old_syncs
+	sid = trigger.group(2)
+	if sid is not None:
+		sid = int(sid) 
 
-        for syncer in self.__syncers:
-            if syncer.is_ready == False:
-                are_all_syncers_ready = False
+	sync = find_sync(bot, trigger, Identifier(trigger.nick), old_syncs, sid)
 
-        return are_all_syncers_ready
+	if sync is None:
+		bot.say("Sorry! You were not in a recent sync!")
+	else:
+		sync.syncers = {s:False for s in sync.syncers}
+		sync.syncers[Identifier(trigger.nick)] = True
+		sync.timeout = 10
 
-    # method that starts a timer
-    def start_timer(self):
-        self.__sync_timer=Timer(120.0, self.timeout_sync)
-        self.__sync_timer.start()
-        self.__bot.say(BUCKLE_UP_MESSAGE + self.syncer_list_string(self.__syncers) + "!")
-
-    def timeout_sync(self):
-        self.__bot.say(SYNC_FAILED_MESSAGE)
-        self.desync_this_sync()
-
-
-    # checks if a sync is valid
-    def is_syncer_valid(self, syncer):
-        is_syncer_valid = syncer.is_syncer_name_valid(self.__channel_user_list, self.__bot)
-        return is_syncer_valid
-
-    # initiate the sync
-    def initiate_sync(self):
-        self.desync_this_sync()
-        self.__bot.say("Let's go " + self.syncer_list_string(self.__syncers) + "!")
-        sleep(2)
-        self.__bot.say("3")
-        sleep(2)
-        self.__bot.say("2")
-        sleep(2)
-        self.__bot.say("1")
-        sleep(2)
-        self.__bot.say("GO!")
-
-
-    # sets syncer to ready
-    def ready_syncer(self, syncer_name):
-        syncer = self.find_syncer_based_on_name(syncer_name)
-
-        if self.is_syncer_part_of_sync(syncer):
-            if syncer.is_ready == False:
-                syncer.is_ready = True
-                if self.are_all_syncers_ready() == True:
-                    self.initiate_sync()
-            else:
-                self.__bot.say(ALREADY_READY_MESSAGE)
-
-    # find syncer in the sync list by name
-    def find_syncer_based_on_name(self, syncer_name):
-        syncer = None
-
-        for s in self.__syncers:
-            if Identifier(s.name) == Identifier(syncer_name.lower()):
-                syncer = s
-
-        return syncer
-
-    # checks if it contains the syncer
-    def is_syncer_part_of_sync(self, given_syncer):
-        is_part_of_sync = False
-
-        for syncer in self.__syncers:
-            if given_syncer == syncer:
-                is_part_of_sync = True
-
-        return is_part_of_sync
-
-    # desyncs the sync
-    def syncer_desync_this_sync(self, syncer_name):
-        syncer = self.find_syncer_based_on_name(syncer_name)
-
-        if syncer != None:
-            self.desync_this_sync()
-            self.__bot.say(DESYNCING_SYNC_MESSAGE)
-        else:
-            self.__bot.say(NOT_A_SYNCER_MESSAGE)
-
-    def desync_this_sync(self):
-        global _current_sync, _previous_sync
-        _previous_sync = _current_sync
-        _current_sync = None
-        if self.__sync_timer != None:
-            self.__sync_timer.cancel()
-
-
-class Syncer:
-    __name = None
-    __is_ready = False
-
-    # get property of name
-    @property
-    def name(self):
-        return self.__name
-    
-    # get/set property of ready
-    @property
-    def is_ready(self):
-        return self.__is_ready
-
-    @is_ready.setter
-    def is_ready(self, value):
-        self.__is_ready = value
-
-    # constructor that sets name and checks if it is valid
-    def __init__(self, syncer_name):
-        self.__name = syncer_name.lower()
-
-    # checks if the syncer is valid
-    def is_syncer_name_valid(self, users_list, bot):
-        is_valid = False
-
-        nicknames = users_list
-
-        for nick in nicknames:
-
-            if self.__name == nick:
-                is_valid = True
-
-        return is_valid
-
-def channel_user_list(bot, trigger):
-    channel_user_list = []
-    nicks = bot.channels[trigger.sender.lower()].users
-    for nick in nicks:
-        channel_user_list.append(Identifier(nick))
-    return channel_user_list
-
-def is_in_syncer_list(trigger, syncer_names):
-    is_user_in_syncer_list = False
-    for name in syncer_names:
-        if Identifier(trigger.nick) == Identifier(name):
-            is_user_in_syncer_list = True
-    return is_user_in_syncer_list
-
-
-@commands('sync','syncpoi','synczura')
-def sync(bot,trigger):
-    global _current_sync
-
-    if _current_sync == None:
-        message_group = trigger.group(2)
-        if message_group != None:
-            syncer_names = message_group.split()
-        else:
-            return bot.say(WHAT_DOING_MESSAGE)
-
-        user_list = channel_user_list(bot, trigger)
-
-        is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
-
-        if not is_user_in_syncer_list:
-            return bot.say(INCLUDE_SELF_MESSAGE)
-
-        new_sync = Sync(syncer_names, bot, user_list)
-        _current_sync = new_sync
-        if not new_sync.is_valid:
-            _current_sync = None
-    else:
-        bot.say(WAIT_FOR_SYNC_MESSAGE)
-
-@commands('desync','desyncpoi','desynczura')
-def desync(bot,trigger):
-    if _current_sync != None:
-        _current_sync.syncer_desync_this_sync(Identifier(trigger.nick))
-    return
-
-@commands('ready','readypoi','readyzura')
-def ready(bot,trigger):
-    if _current_sync != None:
-        _current_sync.ready_syncer(Identifier(trigger.nick))
-    else:
-        bot.say(NO_SYNC_MESSAGE)
-    return
-
-@commands('resync','resyncpoi','resynczura')
-def resync(bot,trigger):
-    global _current_sync
-    if _current_sync == None:
-        if _previous_sync != None:
-            _current_sync = _previous_sync
-            user_list = channel_user_list(bot, trigger)
-            syncer_names = _previous_sync.syncer_names
-
-            is_user_in_syncer_list = is_in_syncer_list(trigger, syncer_names)
-            if not is_user_in_syncer_list:
-                _current_sync = None
-                return bot.say(NOT_IN_PREV_SYNC_MESSAGE)
-
-            _current_sync.__init__(_previous_sync.syncer_names, bot, user_list)
-        else:
-            bot.say(NO_PREV_SYNC_MESSAGE)
-    else:
-        bot.say(WAIT_FOR_SYNC_MESSAGE)
-
-@commands('lastsync')
-def last_sync(bot,trigger):
-    if _previous_sync != None:
-        syncers = _previous_sync.syncers
-        message = ""
-        if len(syncers) == 1:
-            message = _previous_sync.syncer_list_string(syncers) + " " + WAS_LAST_SYNCER_MESSAGE
-        elif len(syncers) > 1:
-            message = _previous_sync.syncer_list_string(syncers) + " " + WERE_LAST_SYNCERS_MESSAGE
-
-        bot.say(message)
-    else:
-        bot.say(NO_PREV_SYNC_MESSAGE)
+		old_syncs = [s for s in old_syncs if s is not sync]
+		current_syncs.append(sync)
+	bot.say("Buckle up resyncers! (ID: {:X})".format(sync.id))
