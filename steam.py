@@ -3,6 +3,8 @@ from sopel.tools import SopelMemory
 import re
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+import json
 
 steamregex = re.compile('.*https?:\/\/store\.steampowered\.com\/app\/(.*?\/)(?:.*?\/)?(?:.*)((?=[\s])|$)')
 def setup(bot):
@@ -27,10 +29,10 @@ def altsteamsearch(query):
     else:
         return None
     return appid.group(1)
-    
+
 def getsteamappid(game):
     try:
-        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208404".format(game)
+        url = "https://store.steampowered.com/search/suggest?term={}&f=games&cc=US&l=english&v=5208415".format(game)
         bs = BeautifulSoup(requests.get(url).content, "html.parser")
         appid = bs.find_all('a', {'class':'match ds_collapse_flag '})[0]['data-ds-appid']
     except:
@@ -64,7 +66,7 @@ def getgameinfo(appid):
     else:
         gameinfo['release'] = ''
     return gameinfo
-    
+
 def getaverageplayers24h(appid, full=False):
     try:
         bs = BeautifulSoup(requests.get("http://steamcharts.com/app/{}".format(appid)).content, "html.parser")
@@ -79,6 +81,7 @@ def getaverageplayers24h(appid, full=False):
             _24 = ''
         return "{:,}".format(int(_24h)) if _24h else ''
     else:
+        #return current, _24h, alltime
         return "{:,}".format(int(current)), "{:,}".format(int(_24h)), "{:,}".format(int(alltime))
 
 def getreviewdata(appid):
@@ -99,7 +102,7 @@ def getlowestprice(appid):
         x = requests.get(url, headers={'referer': 'https://steamdb.info/app/{}/'.format(appid),'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'})
         data = x.json()['data']
         low = list(reversed(data['final']))[list(reversed([i[1] for i in data['final']])).index(min([i[1] for i in data['final']]))]  #lol
-        #low = sorted([x for x in data["final"] if x[1] == sorted(data["final"], key=lambda item: item[1])[0][1]], key=lambda other_item: other_item[0], reverse=True)[0]   #ALTERNATIVE BY sc00ty
+        #lowest = sorted([x for x in data["final"] if x[1] == sorted(data["final"], key=lambda item: item[1])[0][1]], key=lambda other_item: other_item[0], reverse=True)[0]   #ALTERNATIVE BY sc00ty
         lowestdate = datetime.fromtimestamp(low[0]/1000)
         lowestprice = data['formatted'][str(low[0])]['final']
         lowestdiscount = "{}%".format(data['formatted'][str(low[0])]['discount'])
