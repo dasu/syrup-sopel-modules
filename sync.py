@@ -69,7 +69,7 @@ def sync_update(bot):
 		s.timeout -= 1
 		if s.timeout <= 0:
 			add_old_sync(s)
-			bot.say("Sync {:X} failed!".format(id))
+			bot.say("Sync {:X} failed!".format(s.id))
 
 	current_syncs = [s for s in current_syncs if s.timeout > 0]
 
