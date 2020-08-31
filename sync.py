@@ -12,11 +12,12 @@ sync_id = 0
 max_old_syncs = 100
 
 class Sync:
-	def __init__(self, syncers):
+	def __init__(self, syncers, channel):
 		global sync_id
 		self.syncers = syncers
 		self.timeout = 10
 		self.id = sync_id
+		self.channel = channel
 		sync_id += 1
 
 	def ready(self):
@@ -62,14 +63,15 @@ def add_old_sync(sync):
 		old_syncs = old_syncs[:len(old_syncs)-max_old_syncs]
 
 @sopel.module.interval(10)
-@sopel.module.priority("high")
 def sync_update(bot):
 	global current_syncs
 	for s in current_syncs:
+		if s.channel not in bot.channels:
+			continue
 		s.timeout -= 1
 		if s.timeout <= 0:
 			add_old_sync(s)
-			bot.say("Sync {:X} failed!".format(s.id))
+			bot.say("Sync {:X} failed!".format(s.id), s.channel)
 
 	current_syncs = [s for s in current_syncs if s.timeout > 0]
 
@@ -82,8 +84,7 @@ def sync(bot, trigger):
 
 	syncers = trigger.group(2).split()
 	syncers.append(trigger.nick)
-
-	sync = Sync({Identifier(s): False for s in set(syncers)})
+	sync = Sync({Identifier(s): False for s in set(syncers)}, trigger.sender)
 
 	if check_valid(bot, trigger, sync):
 		sync.syncers[Identifier(trigger.nick)] = True
