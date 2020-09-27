@@ -10,12 +10,13 @@ old_syncs = []
 current_syncs = []
 sync_id = 0
 max_old_syncs = 100
+timeout_time = 30
 
 class Sync:
 	def __init__(self, syncers, channel):
 		global sync_id
 		self.syncers = syncers
-		self.timeout = 10
+		self.timeout = timeout_time
 		self.id = sync_id
 		self.channel = channel
 		sync_id += 1
@@ -26,24 +27,28 @@ class Sync:
 	def names(self):
 		return ", ".join([str(s) for s,r in self.syncers.items()])
 
-def check_valid(bot, trigger, sync):
+def check_valid(bot, trigger, sync, output=False):
 	channel_users = [Identifier(n) for n in bot.channels[trigger.sender.lower()].users]
 	if Identifier(bot.nick) in sync.syncers:
-		bot.say("Sorry! I'm shy!!!")
+		if output:
+			bot.say("Sorry! I'm shy!!!")
 		return False
 
 	if len(sync.syncers) < 2:
-		bot.say("Not enough syncers! Get some friends!")
+		if output:
+			bot.say("Not enough syncers! Get some friends!")
 		return False
 
 	for nick in sync.syncers:
 		if nick not in channel_users:
-			bot.say("{} is invalid! Get em outta here!".format(str(nick)))
+			if output:
+				bot.say("{} is invalid! Get em outta here!".format(str(nick)))
 			return False
 		else:
 			for s in current_syncs:
 				if s is not sync and nick in s.syncers:
-					bot.say("{} is busy with sync {:X}".format(str(nick), s.id))
+					if output:
+						bot.say("{} is busy with sync {:X}".format(str(nick), s.id))
 					return False
 	return True
 
@@ -86,7 +91,7 @@ def sync(bot, trigger):
 	syncers.append(trigger.nick)
 	sync = Sync({Identifier(s): False for s in set(syncers)}, trigger.sender)
 
-	if check_valid(bot, trigger, sync):
+	if check_valid(bot, trigger, sync, True):
 		sync.syncers[Identifier(trigger.nick)] = True
 		current_syncs.append(sync)
 		bot.say("Buckle up syncers! (ID: {:X})".format(sync.id))
@@ -100,10 +105,11 @@ def desync(bot, trigger):
 
 	if sync is None:
 		bot.say("Sorry! You are not in a sync!")
-	else:
-		current_syncs = [s for s in current_syncs if s is not sync]
-		add_old_sync(sync)
-		bot.say("Desyncing... (ID: {:X})".format(sync.id))
+		return
+
+	current_syncs = [s for s in current_syncs if s is not sync]
+	add_old_sync(sync)
+	bot.say("Desyncing... (ID: {:X})".format(sync.id))
 
 @sopel.module.commands("ready")
 @sopel.module.commands("rdy")
@@ -120,19 +126,19 @@ def ready(bot, trigger):
 
 	if sync is None:
 		bot.say("Sorry! Could not find you in a valid sync!")
-	else:
-		sync.syncers[Identifier(trigger.nick)] = True
-		if sync.ready():
-			current_syncs = [s for s in current_syncs if s is not sync]
-			add_old_sync(sync)
-			bot.say("Lets go {}!".format(sync.names()))
+		return
+
+	sync.syncers[Identifier(trigger.nick)] = True
+	if sync.ready():
+		current_syncs = [s for s in current_syncs if s is not sync]
+		add_old_sync(sync)
+		bot.say("Lets go {}!".format(sync.names()))
+		time.sleep(2)
+		for i in reversed(range(1,4)):
+			bot.say("{}".format(i))
 			time.sleep(2)
-			for i in reversed(range(1,4)):
-				bot.say("{}".format(i))
-				time.sleep(2)
-			bot.say("GO!")
-	
-		
+		bot.say("GO!")
+
 @sopel.module.commands("resync")
 @sopel.module.commands("rs")
 @sopel.module.priority("high")
@@ -146,11 +152,12 @@ def resync(bot, trigger):
 
 	if sync is None:
 		bot.say("Sorry! You were not in a recent sync!")
-	else:
-		sync.syncers = {s:False for s in sync.syncers}
-		sync.syncers[Identifier(trigger.nick)] = True
-		sync.timeout = 10
+		return
 
-		old_syncs = [s for s in old_syncs if s is not sync]
-		current_syncs.append(sync)
+	sync.syncers = {s:False for s in sync.syncers}
+	sync.syncers[Identifier(trigger.nick)] = True
+	sync.timeout = timeout_time
+
+	old_syncs = [s for s in old_syncs if s is not sync]
+	current_syncs.append(sync)
 	bot.say("Buckle up resyncers! {} (ID: {:X})".format(sync.names(), sync.id))
