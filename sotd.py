@@ -162,7 +162,7 @@ def sotd(bot, trigger):
                 id = domain.path[7:]
                 nico = Nicovideo()
                 nico.append(id)
-                title = nico._video[id].title
+                song = nico._video[id].title
             else:
                 song = ""
             sdate = datetime.datetime.now()
