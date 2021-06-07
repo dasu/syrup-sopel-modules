@@ -137,8 +137,8 @@ def fact(bot, trigger):
         "Miscommunication between two people can have deadly consequences",
         "A successful marriage ends with you watching the other die",
         "Penguins can not fly",
-        "The everyday life you take for granted will one day crumble.",
-        "You will never return to the old normal."
+        "The everyday life you take for granted will one day crumble",
+        "You will never return to the old normal"
         ]
 
     bot.say(":V Fact Seagull says: {}".format(random.choice(x)))
