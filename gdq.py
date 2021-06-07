@@ -78,7 +78,7 @@ def gdq(bot, trigger):
     url = 'https://gamesdonequick.com/schedule'
     try:
         x = requests.get(url).content
-        bs = BeautifulSoup(x)
+        bs = BeautifulSoup(x, "html.parser")
         run = bs.find("table",{"id":"runTable"}).tbody
         gdqstart = datetime.strptime(run.td.getText(), '%Y-%m-%dT%H:%M:%SZ')
         gdqstart = gdqstart.replace(tzinfo=timezone.utc)
