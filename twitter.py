@@ -3,14 +3,14 @@ from bs4 import BeautifulSoup
 import sopel
 import re
 
-twitterregex = re.compile("(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
+twitterregex = re.compile(".*(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
 
 def setup(bot):
   if not bot.memory.contains('url_callbacks'):
     bot.memory['url_callbacks'] = SopelMemory()
   bot.memory['url_callbacks'][twitterregex] = twatterirc
 
-@sopel.module.rule("(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
+@sopel.module.rule(".*(https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))")
 def twatterirc(bot,trigger):
   url = "https://publish.twitter.com/oembed?url={}".format(trigger.group(1))
   x = requests.get(url)
