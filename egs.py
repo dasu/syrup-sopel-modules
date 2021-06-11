@@ -1,42 +1,14 @@
-
 import requests
 import sopel
 import datetime
 
 @sopel.module.commands('egs', 'egsfree')
 def egs(bot, trigger):
-  variables={"namespace":"epic","country":"US","locale":"en-US"}
-  query= """
-          query promotionsQuery($namespace: String!, $country: String!, $locale: String!) {
-            Catalog {
-              catalogOffers(namespace: $namespace, locale: $locale, params: {category: \"freegames\", country: $country, sortBy: \"effectiveDate\", sortDir: \"asc\"}) {
-                elements {
-                  title
-                  description
-                  promotions {
-                    promotionalOffers {
-                      promotionalOffers {
-                        startDate
-                        endDate
-                      }
-                    }
-                    upcomingPromotionalOffers {
-                      promotionalOffers {
-                        startDate
-                        endDate
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        """
-
-  res = (requests.post('https://graphql.epicgames.com/graphql', json={'query': query, 'variables': variables})).json()
+  url = "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions?locale=en-US&country=US&allowCountries=US"
+  res = requests.get(url).json()
   freenow = []
   upcomingfree = []
-  for x in res['data']['Catalog']['catalogOffers']['elements']:
+  for x in res['data']['Catalog']['searchStore']['elements']:
     if not x['promotions']:
       continue
     if x['promotions']['promotionalOffers']:
