@@ -98,14 +98,27 @@ def getreviewdata(appid):
 
 def getlowestprice(appid):
     try:
-        url = 'https://steamdb.info/api/GetPriceHistory/?appid={}&cc=us'.format(appid)
-        x = requests.get(url, headers={'referer': 'https://steamdb.info/app/{}/'.format(appid),'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'})
-        data = x.json()['data']
-        low = list(reversed(data['final']))[list(reversed([i[1] for i in data['final']])).index(min([i[1] for i in data['final']]))]  #lol
-        #lowest = sorted([x for x in data["final"] if x[1] == sorted(data["final"], key=lambda item: item[1])[0][1]], key=lambda other_item: other_item[0], reverse=True)[0]   #ALTERNATIVE BY sc00ty
-        lowestdate = datetime.fromtimestamp(low[0]/1000)
-        lowestprice = data['formatted'][str(low[0])]['final']
-        lowestdiscount = "{}%".format(data['formatted'][str(low[0])]['discount'])
+    url = 'https://steamdb.info/api/GetPriceHistory/?appid={}&cc=us'.format(appid)
+    headers={
+        'authority': "steamdb.info",
+        'path': "/api/GetPriceHistory?appid='"+appid+"'&cc=us",
+        'method': "GET",
+        'scheme': "https",
+        'accept': "application/json, text/javascript, */*;q=0.01",
+        'referer': "https://steamdb.info/app/"+appid+"/",
+        'sec-fetch-dest': "empty",
+        'sec-fetch-mode': "cors",
+        'sec-fetch-site': "same-origin",
+        'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+        'x-requested-with': "XMLHttpRequest"
+    }
+    x = requests.get(url, headers=headers)
+    data = x.json()['data']
+    low = list(reversed(data['history']))[list(reversed([i['y'] for i in data['history']])).index(min([i['y'] for i in data['history']]))]  #lol
+    #lowest = sorted([x for x in data["final"] if x[1] == sorted(data["final"], key=lambda item: item[1])[0][1]], key=lambda other_item: other_item[0], reverse=True)[0]   #ALTERNATIVE BY sc00ty
+    lowestdate = datetime.fromtimestamp(low['x']/1000)
+    lowestprice = low['f']
+    lowestdiscount = "{}%".format(low['d'])
     except:
         return '','',''
     return lowestdate, lowestprice, lowestdiscount
