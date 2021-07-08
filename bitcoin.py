@@ -1,6 +1,5 @@
 # Flexible crypto currency module
 # Originally created by @sc0tt (https://github.com/sc0tt)
-# Requires api key from worldcoinindex https://www.worldcoinindex.com/apiservice
 import requests
 import sys
 import json
@@ -9,7 +8,7 @@ import sopel
 with open('/home/desu/.sopel/last_prices') as read_file:
   last_prices = json.load(read_file)
 main_coins = ["btc", "bch", "xrp", "eth", "xlm", "doge"]
-single_url = "https://www.worldcoinindex.com/apiservice/json?key=API_KEY"
+single_url = "https://www.worldcoinindex.com/apiservice/json?key=IsyJrOzLmZmoxY1EkecrAUGPNktTE4FQDcq"
 
 @sopel.module.rule('^\.({0})$'.format("|".join(main_coins)))
 def crypto_spot(bot, trigger):
@@ -18,6 +17,7 @@ def crypto_spot(bot, trigger):
   from_cur = from_cur.lower()
   if from_cur not in main_coins:
     bot.say("Invalid currency!")
+
   api_result = requests.get(single_url).json()
   for coins in api_result['Markets']:
     if coins['Label'] == '{}/BTC'.format(trigger.group(1).upper()):
@@ -44,7 +44,7 @@ def tick(bot, trigger):
         break
     if coin not in last_prices:
       last_prices[coin] = 0
-    digits = False if coin.lower() == 'xrp' or coin.lower() == 'xlm' else True
+    digits = False if coin.lower() == 'xrp' or coin.lower() == 'xlm' or coin.lower()=='doge' else True
     diffStr = getDiffString(float(price_usd), last_prices[coin], digits)
     last_prices[coin] = float(price_usd)
     results.append("{0}: ${1:.{2}f}{3}".format(coin, float(price_usd), 2 if digits else 4, diffStr))
@@ -79,7 +79,7 @@ def getSteamMarketPrice(item):
 
 @sopel.module.commands('crates')
 def crates(bot, trigger):
-  crates = ['SURVIVOR CRATE','WANDERER CRATE','GAMESCOM INVITATIONAL CRATE']
+  crates = ['SURVIVOR CRATE','WANDERER CRATE','GAMESCOM INVITATIONAL CRATE', 'BIKER CRATE', 'DESPERADO CRATE','PIONEER CRATE']
   results = []
   for crate in crates:
     results.append(getSteamMarketPrice(crate))
