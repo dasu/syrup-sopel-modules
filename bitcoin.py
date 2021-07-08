@@ -8,7 +8,7 @@ import sopel
 with open('/home/desu/.sopel/last_prices') as read_file:
   last_prices = json.load(read_file)
 main_coins = ["btc", "bch", "xrp", "eth", "xlm", "doge"]
-single_url = "https://www.worldcoinindex.com/apiservice/json?key=IsyJrOzLmZmoxY1EkecrAUGPNktTE4FQDcq"
+single_url = "https://www.worldcoinindex.com/apiservice/json?key=INSERT KEY HERE"
 
 @sopel.module.rule('^\.({0})$'.format("|".join(main_coins)))
 def crypto_spot(bot, trigger):
