@@ -23,7 +23,7 @@ def stocks(bot,trigger):
         return bot.say('Please enter a valid stock symbol')
     if x.json().get('error'):
         return bot.say(x.json()['error'])
-    start = '{0:.2f}'.format(float(x.json()['o']))
+    start = '{0:.2f}'.format(float(x.json()['pc']))
     if not start:
         return bot.say("Invalid stock?")
     current = '{0:.2f}'.format(float(x.json()['c']))
