@@ -5,7 +5,7 @@ def symbol_lookup(symb):
     s = requests.get("https://query2.finance.yahoo.com/v1/finance/search?q={}&lang=en-US&region=US&quotesCount=3&newsCount=0".format(symb),headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'}).json()
     if not s['quotes']:
         return None, None
-    return s['quotes'][0]['shortname'], s['quotes'][0]['symbol']
+    return (s['quotes'][0].get('shortname') or s['quotes'][0]['longname']), s['quotes'][0]['symbol']
 
 @sopel.module.commands('stocks', 'stock')
 def stocks(bot,trigger):
