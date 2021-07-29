@@ -60,7 +60,7 @@ def anime(bot, trigger):
     pass
   if not trigger.group(2):
     f = 'today'
-  nowweekday = datetime.now(timezone('Asia/Tokyo')).weekday()
+  nowweekday = datetime.now(timezone('America/Toronto')).weekday()
   if f == 'today': weekday = nowweekday
   elif f == 'tomorrow': weekday = 0 if (nowweekday+1) == 7 else (nowweekday+1)
   elif f == 'yesterday': weekday = 6 if (nowweekday-1) == -1 else (nowweekday-1)
@@ -88,7 +88,7 @@ def anime(bot, trigger):
   res2 = []
   if (f == 'today' or f == 'yesterday' or f == 'tomorrow' or f in days):
     for n in z:
-      if (datetime.fromtimestamp(n['airingAt'], tz=timezone('Asia/Tokyo'))).weekday() != weekday: continue
+      if (datetime.fromtimestamp(n['airingAt'])).weekday() != weekday: continue
       name = n['media']['title']['romaji']
       episode = n['episode']
       countdown = (datetime.fromtimestamp(n['airingAt'], tz=timezone('Asia/Tokyo'))-now)
