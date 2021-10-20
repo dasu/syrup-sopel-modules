@@ -7,7 +7,7 @@ def symbol_lookup(symb):
         return None, None
     return (s['quotes'][0].get('shortname') or s['quotes'][0]['longname']), s['quotes'][0]['symbol']
 
-@sopel.module.commands('stocks', 'stock')
+@sopel.module.commands('dji','stocks', 'stock')
 def stocks(bot,trigger):
     if not trigger.group(2):
         x = requests.get("https://finnhub.io/api/v1/quote?symbol=^DJI&token=INSERT_TOKEN_HERE")
@@ -15,7 +15,7 @@ def stocks(bot,trigger):
     else:
         name, symbol = symbol_lookup(trigger.group(2))
         if not name:
-             return bot.say("No Results")
+            return bot.say("No Results")
         x = requests.get("https://finnhub.io/api/v1/quote?symbol={}&token=INSERT_TOKEN_HERE".format((symbol).upper()))
     if x.json().get('Note'):
         return bot.say('Rate limit reached (30/min), try again in one minute')
