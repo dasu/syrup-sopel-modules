@@ -29,6 +29,7 @@ streamers = [
 twitchregex = re.compile('.*https?:\/\/(?:(?:www\.)|(?:go\.))?twitch.tv\/(.*?)\/?(?:(?=[\s|\/])|$)')
 twitchclipsregex = re.compile('.*https?:\/\/clips\.twitch.tv\/(.*?)\/?(?:(?=[\s])|$)')
 
+@sopel.module.interval(2592000) #refreshes token every 30 days (maybe?)
 def tokensetup(bot, twitchclientid, twitchclientsecret):
     x = requests.post('https://id.twitch.tv/oauth2/token?client_id={}&client_secret={}&grant_type=client_credentials'.format(twitchclientid,twitchclientsecret))
     global token
