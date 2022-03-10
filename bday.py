@@ -72,7 +72,7 @@ def nextbday(bot, trigger):
             bot.say("Next birthday: {0} on {1} ({2} days away)".format(nnname, nbday, daysaway))
 
 
-@sopel.module.interval(21600)
+@sopel.module.interval(43200)
 def announce_bday(bot):
     announce = []
     dict = readjson()
