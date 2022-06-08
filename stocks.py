@@ -10,8 +10,15 @@ def symbol_lookup(symb):
 @sopel.module.commands('dji','stocks', 'stock')
 def stocks(bot,trigger):
     if not trigger.group(2):
-        x = requests.get("https://finnhub.io/api/v1/quote?symbol=^DJI&token=INSERT_TOKEN_HERE")
+        #x = requests.get("https://finnhub.io/api/v1/quote?symbol=^DJI&token=INSERT_TOKEN_HERE")
+        x = requests.get("https://query1.finance.yahoo.com/v7/finance/spark?symbols=%5EDJI&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance",headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36'})
         name = "Dow Jones Index"
+        current = '{0:.2f}'.format(x.json()['spark']['result'][0]['response'][0]['meta']['regularMarketPrice'])
+        start = '{0:.2f}'.format(x.json()['spark']['result'][0]['response'][0]['meta']['previousClose'])
+        change = '{0:.2f}'.format(float(current) - float(start))
+        percent = '{0:.2f}'.format((float(change) / float(start))*100)
+        name = "Dow Jones Index"
+        return bot.say("{0}: {1} ({2}/{3}) from {4}".format(name,current,"\x0304"+change+"\x0F" if float(change) < 0 else "\x0303"+change+"\x0F","\x0304"+percent+"%\x0F" if float(percent) < 0 else "\x0303+"+percent+"%\x0F",start))
     else:
         name, symbol = symbol_lookup(trigger.group(2))
         if not name:
