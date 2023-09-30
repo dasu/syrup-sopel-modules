@@ -11,7 +11,8 @@ import requests
 import shutil
 import random
 import string
-import youtube_dl
+#import youtube_dl
+import yt_dlp
 from nicovideo import Nicovideo
 import os
 import sys
@@ -63,6 +64,8 @@ def fetch_yt_video_info(bot,id):
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
+        'noprogress': True,
+        'no_warnings': True,
         'max_filesize': 52428800, #50MB
         'outtmpl': '/path/to/songs/folder/{}'.format(bksongname+".%(ext)s"),
         'postprocessors':[{
@@ -71,7 +74,7 @@ def fetch_yt_video_info(bot,id):
             'preferredquality': '128',
         }],
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         x = ydl.download(['http://www.youtube.com/watch?v={}'.format(id)])
     bksongname=bksongname+".mp3"
     return info, bksongname
