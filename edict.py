@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import sopel
 
 def get_defintion(word,search_method):
-    result = requests.get("http://nihongo.monash.edu/cgi-bin/wwwjdic?{0}{1}".format(search_method,word))
+    result = requests.get("https://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?{0}{1}".format(search_method,word))
     return BeautifulSoup(result.content, "html.parser")
 
 @sopel.module.commands('edict')
